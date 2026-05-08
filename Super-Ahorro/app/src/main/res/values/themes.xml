@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Theme base usado por el manifest. Compose Material3 maneja casi todo desde Theme.kt -->
-    <style name="Theme.SuperAhorro" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor" tools:targetApi="l">@color/green_primary_dark</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
-    </style>
-</resources>
