@@ -42,22 +42,6 @@ import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
-/**
- * Formulario para agregar un producto a una compra existente.
- *
- * Recibe compraId por parámetro (viene del NavGraph como argumento).
- *
- * Comportamiento del botón "Cancelar":
- *  - Si la compra que originó este producto NO tiene productos cargados,
- *    se elimina automáticamente (rollback). Esto evita que queden compras
- *    "vacías" si el usuario crea una compra y se arrepiente.
- *  - Si ya hay al menos un producto, sólo cancela este alta y vuelve atrás.
- *
- * Comportamiento del botón "Guardar":
- *  - Validación: nombre obligatorio + precio numérico positivo.
- *  - Crea Producto con id auto-generado y lo agrega vía MockData.agregarProducto.
- *  - El precio se ingresa con formato "1.000" pero se parsea a Double al guardar.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NuevoProductoScreen(

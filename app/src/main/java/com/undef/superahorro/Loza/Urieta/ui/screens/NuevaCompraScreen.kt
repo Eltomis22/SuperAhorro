@@ -56,24 +56,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-/**
- * Pantalla para crear una compra nueva o editar una existente.
- *
- * MODO CREACIÓN: cuando compraIdParaEditar es null (default).
- *   - Campos vacíos, fecha y hora del momento.
- *   - Botón dice "Guardar y agregar productos" → MockData.agregarCompra(...)
- *
- * MODO EDICIÓN: cuando compraIdParaEditar trae el id de una compra existente.
- *   - Campos precargados con los datos de esa compra.
- *   - Título cambia a "Editar compra".
- *   - Botón dice "Guardar cambios" → MockData.actualizarCompra(...)
- *
- * Reusar la misma pantalla evita duplicar código entre crear y editar.
- *
- * @param onBack         callback al tocar la flecha de volver
- * @param onCompraGuardada  callback con el id de la compra guardada
- * @param compraIdParaEditar  si no es null, entramos en modo edición
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NuevaCompraScreen(
@@ -81,8 +64,7 @@ fun NuevaCompraScreen(
     onCompraGuardada: (Int) -> Unit,
     compraIdParaEditar: Int? = null
 ) {
-    // Si vino un id, levantamos los datos de esa compra para precargar el formulario.
-    // remember(key) evita rebuscar la compra en cada recomposición.
+
     val compraExistente = remember(compraIdParaEditar) {
         compraIdParaEditar?.let { id -> MockData.compras.firstOrNull { it.id == id } }
     }
@@ -122,13 +104,6 @@ fun NuevaCompraScreen(
                 .padding(16.dp)
         ) {
 
-            // ----------------------------------------------------------------
-            // CAMPO SUPERMERCADO con autocompletado
-            // ----------------------------------------------------------------
-            // ExposedDropdownMenuBox = patrón Material 3 oficial para campos
-            // con sugerencias. PrimaryEditable permite tipear texto libre además
-            // de elegir de la lista (ej: "Almacén Don José" no está en la lista
-            // pero igual se puede guardar).
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
                 onExpandedChange = { menuExpanded = it }
@@ -192,12 +167,8 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ----------------------------------------------------------------
-            // CAMPO TOTAL con formato automático de miles
-            // ----------------------------------------------------------------
             // El usuario tipea "1000" y se ve "1.000" al instante.
-            // Internamente el state guarda el valor formateado (string).
-            // Cuando guardamos, lo parseamos de vuelta a Double con parsearMiles.
+
             OutlinedTextField(
                 value = total,
                 onValueChange = { input ->
@@ -257,17 +228,12 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ----------------------------------------------------------------
-            // VALIDACIÓN del formulario
-            // ----------------------------------------------------------------
+
             // El botón se habilita solo si hay supermercado y un total numérico válido.
-            // Como el campo está formateado con puntos ("1.000"), parseamos quitando los puntos.
             val totalNumerico = Formatters.parsearMiles(total)
             val formularioValido = supermercado.isNotBlank() && totalNumerico != null && totalNumerico > 0
 
-            // ----------------------------------------------------------------
-            // BOTÓN GUARDAR: lógica distinta según modo creación o edición
-            // ----------------------------------------------------------------
+
             Button(
                 onClick = {
                     if (esEdicion && compraExistente != null) {

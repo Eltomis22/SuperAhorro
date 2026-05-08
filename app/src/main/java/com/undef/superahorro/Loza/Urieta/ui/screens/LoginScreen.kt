@@ -42,18 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.undef.superahorro.Loza.Urieta.R
 
-/**
- * Pantalla de inicio de sesión.
- *
- * IMPORTANTE: para esta primera entrega NO hay autenticación real
- * (la consigna lo permite). Lo que sí hacemos es validación visual:
- * el botón "Iniciar sesión" se deshabilita hasta que el email tenga
- * un formato razonable y la contraseña tenga al menos 4 caracteres.
- *
- * En la 2da entrega esto se reemplaza por verificación contra una
- * base de datos local (Room) o una API remota (Retrofit), y la sesión
- * se persiste con DataStore.
- */
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,

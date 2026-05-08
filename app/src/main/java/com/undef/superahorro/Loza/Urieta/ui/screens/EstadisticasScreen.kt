@@ -187,7 +187,6 @@ private fun ChartCard(title: String, content: @Composable () -> Unit) {
 
 /**
  * Gráfico de barras simple dibujado con Canvas.
- * Sin dependencias externas para que la 1ra entrega compile sin librerías de charts.
  */
 @Composable
 private fun BarChart(data: List<Pair<String, Double>>) {

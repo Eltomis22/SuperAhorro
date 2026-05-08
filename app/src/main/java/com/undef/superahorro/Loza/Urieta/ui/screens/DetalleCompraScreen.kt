@@ -53,18 +53,7 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 import android.content.Intent
 
-/**
- * Detalle completo de una compra.
- *
- * Funcionalidades disponibles desde esta pantalla:
- * - Ver header con supermercado, fecha/hora y total.
- * - Ver lista de productos cargados con sus subtotales.
- * - COMPARTIR la compra como texto plano (Intent.ACTION_SEND, requisito de la consigna).
- * - EDITAR la compra → navega a NuevaCompraScreen en modo edición.
- * - ELIMINAR la compra (con diálogo de confirmación).
- * - ELIMINAR un producto individual (botón rojo en cada item de la lista).
- * - AGREGAR otro producto (FAB +) → navega a NuevoProducto.
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleCompraScreen(
@@ -95,10 +84,7 @@ fun DetalleCompraScreen(
                 title = stringResource(R.string.purchase_detail_title),
                 onBack = { navController.popBackStack() },
                 actions = {
-                    // BOTÓN COMPARTIR (Intent.ACTION_SEND)
-                    // Cumple el requisito de la consigna de tener al menos un Intent.
-                    // Abre el selector nativo de Android (chooser) con apps que
-                    // pueden recibir texto: WhatsApp, Mail, Telegram, etc.
+
                     IconButton(onClick = {
                         val texto = shareTemplate.format(
                             compra.supermercado,
@@ -109,7 +95,11 @@ fun DetalleCompraScreen(
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, texto)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, shareChooserTitle))
+
+                        val chooser = Intent.createChooser(shareIntent, shareChooserTitle).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(chooser)
                     }) {
                         Icon(Icons.Filled.Share, null)
                     }
