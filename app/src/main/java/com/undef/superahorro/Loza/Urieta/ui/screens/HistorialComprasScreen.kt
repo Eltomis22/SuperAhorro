@@ -47,10 +47,28 @@ private const val FILTRO_MES_ANTERIOR = 2
 private const val FILTRO_CARREFOUR = 3
 private const val FILTRO_COTO = 4
 
+/**
+ * Historial de compras con filtros funcionales.
+ *
+ * Filtros disponibles (chips arriba):
+ * - Todos:        sin filtro, muestra todas las compras.
+ * - Este mes:     compras cuya fecha empieza con el yyyy-MM actual.
+ * - Mes anterior: compras del mes anterior.
+ * - Carrefour / Coto: filtra por supermercado.
+ *
+ * Las compras se ordenan por fecha+hora descendente y se agrupan por mes
+ * para mostrar un encabezado tipo "Abril 2026" antes de cada bloque.
+ *
+ * Trick importante: identificamos los filtros por ÍNDICE (Int), no por string,
+ * porque el texto del chip cambia según el idioma (ES/EN) y compararlo por
+ * string se rompería al cambiar locale.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialComprasScreen(navController: NavHostController) {
 
+    // mutableIntStateOf es la versión específica para Int (más eficiente que
+    // mutableStateOf<Int> porque evita boxing).
     var filtroSelected by remember { mutableIntStateOf(FILTRO_TODOS) }
 
     val filtros = listOf(
@@ -70,7 +88,12 @@ fun HistorialComprasScreen(navController: NavHostController) {
         hoy.format(fmt) to hoy.minusMonths(1).format(fmt)
     }
 
-    // Aplico el filtro a la lista (esto se recompone cuando cambia compras o filtroSelected)
+    // ----------------------------------------------------------------
+    // APLICAR FILTRO + ordenar
+    // ----------------------------------------------------------------
+    // sortedByDescending ordena de más reciente a más antigua usando
+    // fecha+hora concatenadas (string compare funciona porque están en
+    // formato yyyy-MM-dd HH:mm que se ordena lexicográficamente igual que cronológicamente).
     val comprasOrdenadas = MockData.compras.sortedByDescending { it.fecha + it.hora }
     val comprasFiltradas: List<Compra> = when (filtroSelected) {
         FILTRO_TODOS -> comprasOrdenadas

@@ -28,6 +28,19 @@ import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.AppSettings
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 
+/**
+ * Pantalla de configuración de la app.
+ *
+ * Cada switch escribe directo a AppSettings (singleton reactivo). Como
+ * MainActivity lee de ese singleton para aplicar theme y locale, los
+ * cambios se reflejan en TODA la app al instante:
+ * - Modo oscuro: cambia la paleta del theme inmediatamente.
+ * - Idioma: re-aplica el Locale y stringResource() pasa a leer del XML correcto.
+ * - Notificaciones / Biometría: por ahora solo guardan estado (placeholder).
+ *
+ * En la 2da entrega: AppSettings se va a persistir con DataStore para que
+ * los toggles se mantengan al cerrar la app.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavHostController) {

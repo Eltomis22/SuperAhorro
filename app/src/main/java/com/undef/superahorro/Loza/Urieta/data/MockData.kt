@@ -8,11 +8,24 @@ import com.undef.superahorro.Loza.Urieta.data.model.User
 /**
  * Almacén de datos mockeados para la 1ra entrega.
  *
- * Las compras se mantienen en un mutableStateListOf, lo que permite que la UI
- * se recomponga automáticamente al agregar / modificar / eliminar elementos.
+ * Funciona como una "base de datos en memoria" reactiva:
+ * - usuarioActual:    User logueado (placeholder).
+ * - supermercados:    lista fija de comercios sugeridos para autocompletado.
+ * - compras:          mutableStateListOf con TODAS las compras del usuario.
+ *                     Compose observa esta lista y recompone la UI cada vez
+ *                     que cambia (agregar / actualizar / eliminar).
+ * - gastoMensual y gastoPorSupermercado: datos precalculados para los gráficos
+ *                     de la pantalla de Estadísticas.
  *
- * En la 2da entrega esto se va a reemplazar por Room + Repository, pero la API
- * pública (compras, agregarCompra, agregarProducto) puede mantenerse igual.
+ * Funciones de mutación expuestas:
+ *   - siguienteIdCompra() / siguienteIdProducto()
+ *   - agregarCompra(c) / eliminarCompra(id) / actualizarCompra(c)
+ *   - agregarProducto(compraId, p) / eliminarProducto(compraId, productoId)
+ *
+ * Por qué object (singleton): para que cualquier pantalla pueda leer y mutar
+ * el mismo estado sin tener que pasarlo por parámetros. En la 2da entrega esto
+ * se va a reemplazar por un Repository con Room, pero la API pública seguirá
+ * siendo prácticamente la misma.
  */
 object MockData {
 

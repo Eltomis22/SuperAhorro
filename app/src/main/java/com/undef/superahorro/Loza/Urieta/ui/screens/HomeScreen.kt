@@ -51,14 +51,32 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
+/**
+ * Pantalla principal de la app (post-login).
+ *
+ * Estructura:
+ * - TopBar con saludo + botones de notificaciones y settings.
+ * - Card verde "Gasto del mes" calculado dinámicamente con LocalDate.now().
+ * - Dos accesos rápidos: Historial y Estadísticas.
+ * - Listado de las 3 últimas compras (LazyColumn reactivo).
+ * - FAB "Nueva compra" para crear una compra rápida.
+ * - BottomBar para navegar a Compras / Estadísticas / Perfil.
+ *
+ * Observa MockData.compras (mutableStateListOf), por lo que cuando se agrega
+ * o elimina una compra desde otra pantalla, esta se recompone automáticamente.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
 
     val usuario = MockData.usuarioActual
+    // .take(3) toma sólo las 3 primeras (las más recientes, porque MockData
+    // las inserta al principio con add(0, ...)).
     val ultimasCompras = MockData.compras.take(3)
 
-    // Total del mes calendario actual (usa LocalDate.now)
+    // Total del mes calendario actual (usa LocalDate.now).
+    // Antes estaba hardcodeado en "2026-04" → bug. Ahora calcula el prefijo
+    // del mes actual y suma sólo las compras de ese mes.
     val prefijoEsteMes = remember {
         java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"))
     }
