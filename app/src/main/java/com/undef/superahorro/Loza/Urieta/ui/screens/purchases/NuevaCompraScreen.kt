@@ -1,4 +1,4 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,9 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
-import com.undef.superahorro.Loza.Urieta.data.MockData
-import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 import java.time.LocalDate
@@ -62,28 +63,48 @@ import java.time.format.DateTimeFormatter
 fun NuevaCompraScreen(
     onBack: () -> Unit,
     onCompraGuardada: (Int) -> Unit,
-    compraIdParaEditar: Int? = null
+    compraIdParaEditar: Int? = null,
+    viewModel: NuevaCompraViewModel = viewModel()
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val compraExistente = remember(compraIdParaEditar) {
-        compraIdParaEditar?.let { id -> MockData.compras.firstOrNull { it.id == id } }
+    // Manejar el éxito del guardado
+    LaunchedEffect(state.guardadoExitoso) {
+        state.guardadoExitoso?.let { id ->
+            onCompraGuardada(id)
+        }
     }
-    val esEdicion = compraExistente != null
 
     // Por defecto fecha y hora actuales del dispositivo
     val hoy = remember { LocalDate.now().toString() }
     val ahora = remember {
         LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     }
-    var fecha by remember { mutableStateOf(compraExistente?.fecha ?: hoy) }
-    var hora by remember { mutableStateOf(compraExistente?.hora ?: ahora) }
-    var supermercado by remember { mutableStateOf(compraExistente?.supermercado ?: "") }
-    var total by remember {
-        mutableStateOf(
-            compraExistente?.let { Formatters.formatearMiles(it.total.toLong().toString()) } ?: ""
-        )
-    }
+
+    var fecha by remember { mutableStateOf(hoy) }
+    var hora by remember { mutableStateOf(ahora) }
+    var supermercado by remember { mutableStateOf("") }
+    var total by remember { mutableStateOf("") }
     var menuExpanded by remember { mutableStateOf(false) }
+
+    // Cargar datos si es edición
+    LaunchedEffect(compraIdParaEditar) {
+        compraIdParaEditar?.let { id ->
+            viewModel.cargarCompraParaEditar(id)
+        }
+    }
+
+    // Actualizar campos cuando se carga la compra
+    LaunchedEffect(state.compraCargada) {
+        state.compraCargada?.let { compra ->
+            fecha = compra.fecha
+            hora = compra.hora
+            supermercado = compra.supermercado
+            total = Formatters.formatearMiles(compra.total.toLong().toString())
+        }
+    }
+
+    val esEdicion = compraIdParaEditar != null
 
     Scaffold(
         topBar = {
@@ -125,7 +146,7 @@ fun NuevaCompraScreen(
                         .fillMaxWidth()
                 )
 
-                val sugerencias = MockData.supermercados.filter {
+                val sugerencias = state.supermercados.filter {
                     it.contains(supermercado, ignoreCase = true)
                 }
                 if (sugerencias.isNotEmpty()) {
@@ -167,12 +188,9 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // El usuario tipea "1000" y se ve "1.000" al instante.
-
             OutlinedTextField(
                 value = total,
                 onValueChange = { input ->
-                    // Format con separador de miles mientras el usuario tipea (1000 -> 1.000)
                     total = Formatters.formatearMiles(input)
                 },
                 label = { Text(stringResource(R.string.label_total)) },
@@ -184,12 +202,11 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Card para adjuntar ticket
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clickable { /* TODO: galería/cámara con Intent */ },
+                    .clickable { /* TODO: galería/cámara */ },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
@@ -228,39 +245,20 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(24.dp))
 
-
-            // El botón se habilita solo si hay supermercado y un total numérico válido.
             val totalNumerico = Formatters.parsearMiles(total)
             val formularioValido = supermercado.isNotBlank() && totalNumerico != null && totalNumerico > 0
 
-
             Button(
                 onClick = {
-                    if (esEdicion && compraExistente != null) {
-                        // MODO EDICIÓN: actualizamos la compra conservando sus productos.
-                        val actualizada = compraExistente.copy(
-                            fecha = fecha,
-                            hora = hora,
-                            supermercado = supermercado,
-                            total = totalNumerico ?: 0.0
-                        )
-                        MockData.actualizarCompra(actualizada)
-                        onCompraGuardada(actualizada.id)
-                    } else {
-                        // MODO CREACIÓN: damos de alta una compra nueva con id auto-generado.
-                        val nuevaCompra = Compra(
-                            id = MockData.siguienteIdCompra(),
-                            fecha = fecha,
-                            hora = hora,
-                            supermercado = supermercado,
-                            total = totalNumerico ?: 0.0,
-                            productos = emptyList()
-                        )
-                        MockData.agregarCompra(nuevaCompra)
-                        onCompraGuardada(nuevaCompra.id)
-                    }
+                    viewModel.guardarCompra(
+                        id = compraIdParaEditar,
+                        fecha = fecha,
+                        hora = hora,
+                        supermercado = supermercado,
+                        total = totalNumerico ?: 0.0
+                    )
                 },
-                enabled = formularioValido,
+                enabled = formularioValido && !state.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

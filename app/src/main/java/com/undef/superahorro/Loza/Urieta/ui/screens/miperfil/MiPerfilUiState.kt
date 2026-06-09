@@ -1,6 +1,6 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens.perfil
+package com.undef.superahorro.Loza.Urieta.ui.screens.miperfil
 
-import com.undef.superahorro.data.model.User
+import com.undef.superahorro.Loza.Urieta.data.model.User
 
 data class MiPerfilUiState(
     val isLoading: Boolean = false,

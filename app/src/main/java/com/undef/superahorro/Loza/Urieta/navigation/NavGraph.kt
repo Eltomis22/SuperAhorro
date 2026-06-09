@@ -7,25 +7,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.undef.superahorro.Loza.Urieta.ui.screens.DetalleCompraScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.EstadisticasScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.ForgotPasswordScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.HistorialComprasScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.HomeScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.ListadoComprasScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.LoginScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.MiPerfilScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.NuevaCompraScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.NuevoProductoScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.RegisterScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.SettingsScreen
-import com.undef.superahorro.Loza.Urieta.ui.screens.SplashScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.auth.ForgotPasswordScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.auth.LoginScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.auth.RegisterScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.auth.SplashScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.detallecompra.DetalleCompraScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.estadisticas.EstadisticasScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.home.HomeScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.listadocompras.ListadoComprasScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.MiPerfilScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.HistorialComprasScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevaCompraScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevoProductoScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.settings.SettingsScreen
 
 /**
  * Grafo de navegación principal de la aplicación.
  */
 @Composable
 fun SuperAhorroNavGraph(
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
@@ -76,6 +77,7 @@ fun SuperAhorroNavGraph(
         // ================================================================
 
         composable(Screen.Home.route) {
+            HomeScreen(navController = navController)
         }
 
         composable(Screen.ListadoCompras.route) {

@@ -1,4 +1,4 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,9 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
-import com.undef.superahorro.Loza.Urieta.data.MockData
-import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
@@ -47,8 +48,17 @@ import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 fun NuevoProductoScreen(
     compraId: Int,
     onBack: () -> Unit,
-    onProductoGuardado: () -> Unit
+    onProductoGuardado: () -> Unit,
+    viewModel: NuevoProductoViewModel = viewModel()
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.guardadoExitoso) {
+        if (state.guardadoExitoso) {
+            onProductoGuardado()
+        }
+    }
+
     var codigo by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
@@ -113,7 +123,9 @@ fun NuevoProductoScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = cantidad,
-                    onValueChange = { cantidad = it.filter { c -> c.isDigit() } },
+                    onValueChange = { input ->
+                        cantidad = input.filter { c -> c.isDigit() }
+                    },
                     label = { Text(stringResource(R.string.label_quantity)) },
                     leadingIcon = { Icon(Icons.Filled.Numbers, null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -122,7 +134,6 @@ fun NuevoProductoScreen(
                 OutlinedTextField(
                     value = precio,
                     onValueChange = { input ->
-                        // Formato 1000 -> 1.000 mientras el usuario tipea
                         precio = Formatters.formatearMiles(input)
                     },
                     label = { Text(stringResource(R.string.label_price)) },
@@ -134,23 +145,13 @@ fun NuevoProductoScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Validación: nombre + precio numérico mínimo.
-            // Como el campo precio está formateado con puntos ("1.000"), parseamos quitándolos.
             val precioNumerico = Formatters.parsearMiles(precio)
             val cantidadNumerica = cantidad.toIntOrNull() ?: 1
             val formularioValido = nombre.isNotBlank() && precioNumerico != null && precioNumerico > 0
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
-                    onClick = {
-                        // Rollback: si la compra todavía no tiene productos cargados,
-                        // la eliminamos para que no quede registrada con $0 en productos.
-                        val compraActual = MockData.compras.firstOrNull { it.id == compraId }
-                        if (compraActual != null && compraActual.productos.isEmpty()) {
-                            MockData.eliminarCompra(compraId)
-                        }
-                        onBack()
-                    },
+                    onClick = onBack,
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
@@ -160,18 +161,16 @@ fun NuevoProductoScreen(
                 }
                 Button(
                     onClick = {
-                        val producto = Producto(
-                            id = MockData.siguienteIdProducto(),
+                        viewModel.guardarProducto(
+                            compraId = compraId,
                             codigo = codigo.ifBlank { "—" },
                             nombre = nombre,
                             descripcion = descripcion,
                             cantidad = cantidadNumerica,
                             precio = precioNumerico ?: 0.0
                         )
-                        MockData.agregarProducto(compraId, producto)
-                        onProductoGuardado()
                     },
-                    enabled = formularioValido,
+                    enabled = formularioValido && !state.isLoading,
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),

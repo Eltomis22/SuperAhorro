@@ -1,4 +1,4 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

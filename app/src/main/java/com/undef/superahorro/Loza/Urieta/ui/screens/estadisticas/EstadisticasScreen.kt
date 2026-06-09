@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.undef.superahorro.R
-import com.undef.superahorro.ui.components.SuperAhorroBottomBar
+import com.undef.superahorro.Loza.Urieta.R
+import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

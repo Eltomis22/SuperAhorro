@@ -1,11 +1,11 @@
-package com.undef.superahorro.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.Loza.Urieta.SuperAhorroRepository
-import com.undef.superahorro.data.model.Compra
+import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
+import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import kotlinx.coroutines.launch
 
 class HistorialComprasViewModel : ViewModel() {
@@ -25,7 +25,7 @@ class HistorialComprasViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Se ejecuta en segundo plano gracias al repositorio suspendido
-                val listaCompras = repository.getCompras()
+                val listaCompras = repository.obtenerCompras()
 
                 // Procesamos y agrupamos los datos
                 val comprasOrdenadas = listaCompras.sortedByDescending { it.fecha }

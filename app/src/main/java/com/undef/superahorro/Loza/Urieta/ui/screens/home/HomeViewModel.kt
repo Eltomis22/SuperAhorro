@@ -1,4 +1,4 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// 1. EL ESTADO DE LA PANTALLA
 data class HomeUiState(
     val isLoading: Boolean = false,
     val usuarioNombre: String = "",
@@ -19,9 +18,8 @@ data class HomeUiState(
     val error: String? = null
 )
 
-// 2. EL VIEWMODEL CON INYECCIÓN DE DEPENDENCIAS
 class HomeViewModel(
-    private val repository: SuperAhorroRepository // <-- Parámetro en el constructor
+    private val repository: SuperAhorroRepository = SuperAhorroRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -35,11 +33,9 @@ class HomeViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                // Le pide los datos al Repositorio, no al MockData directamente
                 val usuario = repository.obtenerUsuarioActual()
                 val compras = repository.obtenerCompras()
 
-                // Lógica de negocio orquestada por el ViewModel
                 val ultimas = compras.take(3)
                 val total = compras.filter { it.fecha.startsWith("2026") }.sumOf { it.total }
 

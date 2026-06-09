@@ -18,7 +18,7 @@ import com.undef.superahorro.Loza.Urieta.ui.theme.SuperAhorroTheme
 import java.util.Locale
 
 
-class tomiMainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge()
@@ -43,10 +43,12 @@ class tomiMainActivity : ComponentActivity() {
 
                 CompositionLocalProvider(
                     LocalConfiguration provides newConfig,
-                    LocalContext provides newContext
+                    LocalContext provides newContext,
                 ) {
                     // Surface = contenedor base con el background del theme aplicado.
                     Surface(modifier = Modifier.fillMaxSize()) {
+                        // Acá arranca toda la navegación de la app.
+                        SuperAhorroNavGraph()
                     }
                 }
             }

@@ -63,6 +63,9 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
+    // DataStore (Paso 1 - 2da Entrega)
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

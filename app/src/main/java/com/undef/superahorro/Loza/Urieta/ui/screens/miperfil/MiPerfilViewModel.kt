@@ -1,8 +1,8 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens.perfil
+package com.undef.superahorro.Loza.Urieta.ui.screens.miperfil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.Loza.Urieta.data.repository.SuperAhorroRepository
+import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MiPerfilViewModel(
-    private val repository: SuperAhorroRepository
+    private val repository: SuperAhorroRepository = SuperAhorroRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MiPerfilUiState())

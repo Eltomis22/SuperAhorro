@@ -1,4 +1,4 @@
-package com.undef.superahorro.Loza.Urieta.ui.screens
+package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,15 +28,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.undef.superahorro.Loza.Urieta.R
-import com.undef.superahorro.Loza.Urieta.data.MockData
-import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.navigation.Screen
+import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
+import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 
 private const val FILTRO_TODOS = 0
 private const val FILTRO_ESTE_MES = 1
@@ -44,24 +44,13 @@ private const val FILTRO_MES_ANTERIOR = 2
 private const val FILTRO_CARREFOUR = 3
 private const val FILTRO_COTO = 4
 
-/**
-
- * Filtros disponibles (chips arriba):
- * - Todos:        sin filtro, muestra todas las compras.
- * - Este mes:     compras cuya fecha empieza con el yyyy-MM actual.
- * - Mes anterior: compras del mes anterior.
- * - Carrefour / Coto: filtra por supermercado.
- *
- * Las compras se ordenan por fecha+hora descendente y se agrupan por mes
- * para mostrar un encabezado tipo "Abril 2026" antes de cada bloque.
-
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistorialComprasScreen(navController: NavHostController) {
-
-    // mutableIntStateOf es la versión específica para Int (más eficiente que
-    // mutableStateOf<Int> porque evita boxing).
+fun HistorialComprasScreen(
+    navController: NavHostController,
+    viewModel: HistorialComprasViewModel = viewModel()
+) {
+    val comprasAgrupadasState by viewModel.comprasAgrupadas
     var filtroSelected by remember { mutableIntStateOf(FILTRO_TODOS) }
 
     val filtros = listOf(
@@ -74,41 +63,38 @@ fun HistorialComprasScreen(navController: NavHostController) {
 
     val mesesArray = stringArrayResource(R.array.month_names)
 
-    // Prefijos yyyy-MM para filtros relativos a la fecha actual
     val (prefijoEsteMes, prefijoMesAnterior) = remember {
         val fmt = DateTimeFormatter.ofPattern("yyyy-MM")
         val hoy = LocalDate.now()
         hoy.format(fmt) to hoy.minusMonths(1).format(fmt)
     }
 
-
-
-    val comprasOrdenadas = MockData.compras.sortedByDescending { it.fecha + it.hora }
-    val comprasFiltradas: List<Compra> = when (filtroSelected) {
-        FILTRO_TODOS -> comprasOrdenadas
-        FILTRO_ESTE_MES -> comprasOrdenadas.filter { it.fecha.startsWith(prefijoEsteMes) }
-        FILTRO_MES_ANTERIOR -> comprasOrdenadas.filter { it.fecha.startsWith(prefijoMesAnterior) }
-        FILTRO_CARREFOUR -> comprasOrdenadas.filter { it.supermercado == "Carrefour" }
-        FILTRO_COTO -> comprasOrdenadas.filter { it.supermercado == "Coto" }
-        else -> comprasOrdenadas
-    }
-
-    val agrupadas = comprasFiltradas.groupBy { it.fecha.substring(0, 7) }
+    // Aplicar filtros locales sobre los datos que vienen del ViewModel
+    val agrupadasFiltradas = comprasAgrupadasState.filter { (mes, compras) ->
+        when (filtroSelected) {
+            FILTRO_ESTE_MES -> mes == prefijoEsteMes
+            FILTRO_MES_ANTERIOR -> mes == prefijoMesAnterior
+            else -> true
+        }
+    }.mapValues { (_, compras) ->
+        when (filtroSelected) {
+            FILTRO_CARREFOUR -> compras.filter { it.supermercado == "Carrefour" }
+            FILTRO_COTO -> compras.filter { it.supermercado == "Coto" }
+            else -> compras
+        }
+    }.filter { it.value.isNotEmpty() }
 
     Scaffold(
         topBar = {
-            SuperTopAppBar(
-                title = stringResource(R.string.history_title),
-                onBack = { navController.popBackStack() }
-            )
-        }
+            SuperTopAppBar(title = stringResource(R.string.history_title))
+        },
+        bottomBar = { SuperAhorroBottomBar(navController) }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Chips de filtros
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -132,8 +118,7 @@ fun HistorialComprasScreen(navController: NavHostController) {
                 }
             }
 
-            // Lista de compras agrupadas por mes
-            if (comprasFiltradas.isEmpty()) {
+            if (agrupadasFiltradas.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -151,7 +136,7 @@ fun HistorialComprasScreen(navController: NavHostController) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    agrupadas.forEach { (mes, compras) ->
+                    agrupadasFiltradas.forEach { (mes, compras) ->
                         item {
                             Spacer(Modifier.height(4.dp))
                             Text(
@@ -176,10 +161,6 @@ fun HistorialComprasScreen(navController: NavHostController) {
     }
 }
 
-/**
- * Formatea "2026-04" a "Abril 2026" / "April 2026" según el array de meses
- * provisto desde strings.xml (respeta el idioma activo).
- */
 private fun formatMes(yyyyMm: String, meses: Array<String>): String {
     val partes = yyyyMm.split("-")
     val mesIndex = partes.getOrNull(1)?.toIntOrNull()?.minus(1) ?: return yyyyMm

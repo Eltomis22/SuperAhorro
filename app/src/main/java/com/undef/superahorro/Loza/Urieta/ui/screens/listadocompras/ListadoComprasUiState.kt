@@ -1,6 +1,6 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.listadocompras
 
-import com.undef.superahorro.data.model.Compra
+import com.undef.superahorro.Loza.Urieta.data.model.Compra
 
 data class ListadoComprasUiState(
     val isLoading: Boolean = false,

@@ -1,8 +1,8 @@
 package com.undef.superahorro.Loza.Urieta.data
 
-import com.undef.superahorro.data.MockData
-import com.undef.superahorro.data.model.Compra
-import com.undef.superahorro.data.model.User
+import com.undef.superahorro.Loza.Urieta.data.MockData
+import com.undef.superahorro.Loza.Urieta.data.model.Compra
+import com.undef.superahorro.Loza.Urieta.data.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -37,4 +37,34 @@ class SuperAhorroRepository {
         withContext(Dispatchers.IO) {
             MockData.gastoPorSupermercado
         }
+
+    // --- OPERACIONES DE ESCRITURA ---
+
+    suspend fun agregarCompra(compra: Compra) = withContext(Dispatchers.IO) {
+        MockData.agregarCompra(compra)
+    }
+
+    suspend fun actualizarCompra(compra: Compra) = withContext(Dispatchers.IO) {
+        MockData.actualizarCompra(compra)
+    }
+
+    suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
+        MockData.eliminarCompra(compraId)
+    }
+
+    suspend fun agregarProducto(compraId: Int, producto: com.undef.superahorro.Loza.Urieta.data.model.Producto) = withContext(Dispatchers.IO) {
+        MockData.agregarProducto(compraId, producto)
+    }
+
+    suspend fun eliminarProducto(compraId: Int, productoId: Int) = withContext(Dispatchers.IO) {
+        MockData.eliminarProducto(compraId, productoId)
+    }
+
+    suspend fun siguienteIdCompra(): Int = withContext(Dispatchers.IO) {
+        MockData.siguienteIdCompra()
+    }
+
+    suspend fun siguienteIdProducto(): Int = withContext(Dispatchers.IO) {
+        MockData.siguienteIdProducto()
+    }
 }
