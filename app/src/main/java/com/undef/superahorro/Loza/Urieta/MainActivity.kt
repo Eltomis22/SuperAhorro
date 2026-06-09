@@ -26,17 +26,13 @@ class tomiMainActivity : ComponentActivity() {
 
         setContent {
 
-
             // 1. THEME: Modo claro/oscuro reactivo
-
             SuperAhorroTheme(darkTheme = AppSettings.darkMode) {
-
 
                 // 2. LOCALE: Cambio de idioma
                 val targetLocale = if (AppSettings.useEnglish) Locale("en") else Locale("es")
                 val baseConfig = LocalConfiguration.current
                 val baseContext = LocalContext.current
-
 
                 val newConfig = remember(targetLocale, baseConfig) {
                     Configuration(baseConfig).apply { setLocale(targetLocale) }
@@ -45,15 +41,12 @@ class tomiMainActivity : ComponentActivity() {
                     baseContext.createConfigurationContext(newConfig)
                 }
 
-
                 CompositionLocalProvider(
                     LocalConfiguration provides newConfig,
                     LocalContext provides newContext
                 ) {
                     // Surface = contenedor base con el background del theme aplicado.
                     Surface(modifier = Modifier.fillMaxSize()) {
-                        // Acá arranca toda la navegación de la app.
-                        SuperAhorroNavGraph()
                     }
                 }
             }
