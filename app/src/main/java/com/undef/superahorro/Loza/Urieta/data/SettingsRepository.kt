@@ -20,7 +20,22 @@ class SettingsRepository(private val context: Context) {
     private object PreferencesKeys {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val USE_ENGLISH = booleanPreferencesKey("use_english")
+        val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val USER_ID = booleanPreferencesKey("user_id") // Simplificado para persistencia de ejemplo
     }
+
+    /** Observa si el usuario está logueado */
+    val isLoggedInFlow: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_LOGGED_IN] ?: false
+        }
 
     /** Observa el cambio del modo oscuro */
     val darkModeFlow: Flow<Boolean> = context.dataStore.data
@@ -60,5 +75,17 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USE_ENGLISH] = enabled
         }
+    }
+
+    /** Actualiza el estado de la sesión */
+    suspend fun setLoggedIn(isLoggedIn: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_LOGGED_IN] = isLoggedIn
+        }
+    }
+
+    /** Borra todos los datos (útil para logout) */
+    suspend fun clearSession() {
+        context.dataStore.edit { it.clear() }
     }
 }
