@@ -67,6 +67,7 @@ fun DetalleCompraScreen(
     }
 
     val context = LocalContext.current
+    // Obtenemos los textos traducidos desde strings.xml
     val shareTemplate = stringResource(R.string.share_purchase_text)
     val shareChooserTitle = stringResource(R.string.share_purchase_chooser)
 
@@ -80,6 +81,7 @@ fun DetalleCompraScreen(
                     }
                 },
                 actions = {
+                    // BOTÓN COMPARTIR (REQUISITO INTENTS)
                     state.compra?.let { compra ->
                         IconButton(onClick = {
                             val texto = shareTemplate.format(
