@@ -72,6 +72,11 @@ dependencies {
     // DataStore (Paso 1 - 2da Entrega)
     implementation("androidx.datastore:datastore-preferences:1.1.2")
 
+    // Networking (Paso 9 - 2da Entrega)
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
+    implementation(libs.gson)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
