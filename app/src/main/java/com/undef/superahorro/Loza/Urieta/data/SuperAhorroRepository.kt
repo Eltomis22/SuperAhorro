@@ -1,34 +1,46 @@
 package com.undef.superahorro.Loza.Urieta.data
 
-import com.undef.superahorro.Loza.Urieta.data.MockData
+import com.undef.superahorro.Loza.Urieta.data.local.CompraDao
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
+import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
 import com.undef.superahorro.Loza.Urieta.data.model.User
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class SuperAhorroRepository {
+class SuperAhorroRepository(private val compraDao: CompraDao) {
 
-    // Simula buscar el usuario (con un retraso opcional para simular base de datos/red en el futuro)
+    // --- SESIÓN (Temporalmente sigue en MockData hasta el commit de DataStore/Session) ---
     suspend fun obtenerUsuarioActual(): User = withContext(Dispatchers.IO) {
         MockData.usuarioActual
     }
 
-    // Obtiene todas las compras registradas
+    // --- COMPRAS (Migrado a Room) ---
+    
+    /** Obtiene todas las compras registradas en tiempo real */
+    fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> = compraDao.obtenerTodasLasCompras()
+
+    /** Obtiene todas las compras registradas (Snapshot) */
     suspend fun obtenerCompras(): List<Compra> = withContext(Dispatchers.IO) {
-        MockData.compras
+        // En una implementación real con Flow, solemos usar flow.first(), 
+        // pero MockData devolvía List directamente.
+        MockData.compras // Temporal hasta que migremos la escritura
     }
 
-    // Obtiene el detalle de una compra específica por su ID
+    /** Obtiene el detalle de una compra específica por su ID */
     suspend fun obtenerCompraPorId(id: Int): Compra? = withContext(Dispatchers.IO) {
-        MockData.compras.find { it.id == id }
+        compraDao.obtenerCompraPorId(id)
     }
 
-    // Obtiene la lista de supermercados para los desplegables (Dropdowns)
+    /** Obtiene una compra con todos sus productos asociados */
+    fun obtenerCompraConProductos(id: Int): Flow<CompraConProductos?> = 
+        compraDao.obtenerCompraConProductos(id)
+
+    // --- DROPDOWNS Y OTROS ---
     suspend fun obtenerSupermercados(): List<String> = withContext(Dispatchers.IO) {
         MockData.supermercados
     }
 
-    // Obtiene las estadísticas para la pantalla de Gráficos / Estadísticas
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
         MockData.gastoMensual
     }
@@ -38,7 +50,7 @@ class SuperAhorroRepository {
             MockData.gastoPorSupermercado
         }
 
-    // --- OPERACIONES DE ESCRITURA ---
+    // --- OPERACIONES DE ESCRITURA (MockData temporal hasta Commit 8) ---
 
     suspend fun agregarCompra(compra: Compra) = withContext(Dispatchers.IO) {
         MockData.agregarCompra(compra)

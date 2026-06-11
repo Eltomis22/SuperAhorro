@@ -56,7 +56,7 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 fun MiPerfilScreen(
     navController: NavHostController,
     onLogout: () -> Unit,
-    viewModel: MiPerfilViewModel = viewModel()
+    viewModel: MiPerfilViewModel = viewModel(factory = MiPerfilViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

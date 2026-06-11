@@ -1,7 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,7 @@ data class HomeUiState(
 )
 
 class HomeViewModel(
-    private val repository: SuperAhorroRepository = SuperAhorroRepository()
+    private val repository: SuperAhorroRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -49,6 +51,16 @@ class HomeViewModel(
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as com.undef.superahorro.Loza.Urieta.SuperAhorroApp
+                return HomeViewModel(application.repository) as T
             }
         }
     }

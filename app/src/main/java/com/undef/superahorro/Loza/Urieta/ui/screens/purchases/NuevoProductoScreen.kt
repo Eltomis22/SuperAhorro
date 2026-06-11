@@ -49,7 +49,7 @@ fun NuevoProductoScreen(
     compraId: Int,
     onBack: () -> Unit,
     onProductoGuardado: () -> Unit,
-    viewModel: NuevoProductoViewModel = viewModel()
+    viewModel: NuevoProductoViewModel = viewModel(factory = NuevoProductoViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

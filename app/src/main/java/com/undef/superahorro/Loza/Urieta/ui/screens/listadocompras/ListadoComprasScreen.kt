@@ -31,15 +31,13 @@ import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.navigation.Screen
 import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
-import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListadoComprasScreen(
     navController: NavHostController,
-    viewModel: ListadoComprasViewModel = viewModel() // Inyección de tu ViewModel creado en el Paso 2
+    viewModel: ListadoComprasViewModel = viewModel(factory = ListadoComprasViewModel.Factory)
 ) {
-    // REQUISITO CLAVE: Escuchar el estado respetando el ciclo de vida de la app
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -68,7 +66,6 @@ fun ListadoComprasScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Manejo de flujos (Carga, Error o Lista renderizada)
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (state.error != null) {

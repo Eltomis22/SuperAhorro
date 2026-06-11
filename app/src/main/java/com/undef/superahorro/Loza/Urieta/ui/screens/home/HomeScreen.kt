@@ -56,7 +56,7 @@ import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

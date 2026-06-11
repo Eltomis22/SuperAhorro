@@ -48,7 +48,7 @@ private const val FILTRO_COTO = 4
 @Composable
 fun HistorialComprasScreen(
     navController: NavHostController,
-    viewModel: HistorialComprasViewModel = viewModel()
+    viewModel: HistorialComprasViewModel = viewModel(factory = HistorialComprasViewModel.Factory)
 ) {
     val comprasAgrupadasState by viewModel.comprasAgrupadas
     var filtroSelected by remember { mutableIntStateOf(FILTRO_TODOS) }
@@ -69,8 +69,7 @@ fun HistorialComprasScreen(
         hoy.format(fmt) to hoy.minusMonths(1).format(fmt)
     }
 
-    // Aplicar filtros locales sobre los datos que vienen del ViewModel
-    val agrupadasFiltradas = comprasAgrupadasState.filter { (mes, compras) ->
+    val agrupadasFiltradas = comprasAgrupadasState.filter { (mes, _) ->
         when (filtroSelected) {
             FILTRO_ESTE_MES -> mes == prefijoEsteMes
             FILTRO_MES_ANTERIOR -> mes == prefijoMesAnterior

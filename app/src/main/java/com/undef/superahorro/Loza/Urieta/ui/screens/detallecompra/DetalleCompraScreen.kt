@@ -58,12 +58,10 @@ import com.undef.superahorro.Loza.Urieta.navigation.Screen
 fun DetalleCompraScreen(
     compraId: Int,
     navController: NavHostController,
-    viewModel: DetalleCompraViewModel = viewModel() // Inyección del ViewModel
+    viewModel: DetalleCompraViewModel = viewModel(factory = DetalleCompraViewModel.Factory)
 ) {
-    // REQUISITO CLAVE: Consumo del estado respetando el ciclo de vida
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Disparar la carga asíncrona de los datos al entrar a la pantalla
     LaunchedEffect(compraId) {
         viewModel.cargarDetalleCompra(compraId)
     }
@@ -82,7 +80,6 @@ fun DetalleCompraScreen(
                     }
                 },
                 actions = {
-                    // Solo habilitamos el botón de compartir si la compra ya terminó de cargar
                     state.compra?.let { compra ->
                         IconButton(onClick = {
                             val texto = shareTemplate.format(
@@ -115,7 +112,6 @@ fun DetalleCompraScreen(
             )
         },
         floatingActionButton = {
-            // El FAB solo aparece si tenemos una compra válida cargada
             state.compra?.let { compra ->
                 FloatingActionButton(
                     onClick = { navController.navigate(Screen.NuevoProducto.createRoute(compra.id)) },
@@ -146,7 +142,6 @@ fun DetalleCompraScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                // Al estar seguros de que state.compra no es null, lo bindeamos de manera segura
                 val compra = state.compra!!
 
                 LazyColumn(
@@ -155,7 +150,6 @@ fun DetalleCompraScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
-                        // Header con resumen
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
@@ -193,7 +187,6 @@ fun DetalleCompraScreen(
                     }
 
                     item {
-                        // Card del ticket
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()

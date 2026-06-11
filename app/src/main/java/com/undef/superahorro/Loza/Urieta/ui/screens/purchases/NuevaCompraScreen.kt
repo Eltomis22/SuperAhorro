@@ -64,7 +64,7 @@ fun NuevaCompraScreen(
     onBack: () -> Unit,
     onCompraGuardada: (Int) -> Unit,
     compraIdParaEditar: Int? = null,
-    viewModel: NuevaCompraViewModel = viewModel()
+    viewModel: NuevaCompraViewModel = viewModel(factory = NuevaCompraViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

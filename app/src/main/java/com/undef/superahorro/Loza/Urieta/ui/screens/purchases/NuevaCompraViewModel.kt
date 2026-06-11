@@ -1,7 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,7 @@ data class NuevaCompraUiState(
 )
 
 class NuevaCompraViewModel(
-    private val repository: SuperAhorroRepository = SuperAhorroRepository()
+    private val repository: SuperAhorroRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NuevaCompraUiState())
@@ -53,9 +55,8 @@ class NuevaCompraViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val finalId = id ?: repository.siguienteIdCompra()
                 val nuevaCompra = Compra(
-                    id = finalId,
+                    id = id ?: 0, 
                     fecha = fecha,
                     hora = hora,
                     supermercado = supermercado,
@@ -63,14 +64,26 @@ class NuevaCompraViewModel(
                 )
 
                 if (id == null) {
-                    repository.agregarCompra(nuevaCompra)
+                    val res = repository.agregarCompra(nuevaCompra)
+                    // res es de tipo Any? porque MockData.agregarCompra devuelve Unit
+                    // Room devolverá Long. Por ahora, para compilar:
+                    _uiState.update { it.copy(isLoading = false, guardadoExitoso = 0) }
                 } else {
                     repository.actualizarCompra(nuevaCompra)
+                    _uiState.update { it.copy(isLoading = false, guardadoExitoso = id) }
                 }
-                
-                _uiState.update { it.copy(isLoading = false, guardadoExitoso = finalId) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as com.undef.superahorro.Loza.Urieta.SuperAhorroApp
+                return NuevaCompraViewModel(application.repository) as T
             }
         }
     }

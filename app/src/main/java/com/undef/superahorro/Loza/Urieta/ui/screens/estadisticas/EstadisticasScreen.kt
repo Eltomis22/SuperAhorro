@@ -46,13 +46,10 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 @Composable
 fun EstadisticasScreen(
     navController: NavHostController,
-    // Inyectamos el ViewModel directo en el Composable (podés usar factories si usás inyección manual)
-    viewModel: EstadisticasViewModel = viewModel()
+    viewModel: EstadisticasViewModel = viewModel(factory = EstadisticasViewModel.Factory)
 ) {
-    // EL REQUISITO CLAVE: Consumo del estado respetando el ciclo de vida de la app
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Toda la lógica de cálculo se hace en base a lo que provee el StateFlow
     val totalGastado = state.gastoPorSupermercado.sumOf { it.second }
 
     Scaffold(
@@ -68,7 +65,6 @@ fun EstadisticasScreen(
         bottomBar = { SuperAhorroBottomBar(navController) }
     ) { padding ->
 
-        // Manejo de pantallas de carga / error antes de mostrar la UI rota o vacía
         if (state.isLoading) {
             Box(
                 modifier = Modifier
@@ -96,7 +92,6 @@ fun EstadisticasScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    // KPIs usando los datos inmutables del UiState
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         KPICard(
                             modifier = Modifier.weight(1f),
@@ -106,7 +101,6 @@ fun EstadisticasScreen(
                         KPICard(
                             modifier = Modifier.weight(1f),
                             label = stringResource(R.string.stats_kpi_purchases),
-                            // Quitamos MockData.compras.size, en un futuro podrías mandar el size en el state
                             value = state.gastoMensual.size.toString()
                         )
                     }
@@ -172,7 +166,6 @@ fun EstadisticasScreen(
     }
 }
 
-// Los sub-composables privados de soporte quedan iguales abajo...
 @Composable
 private fun KPICard(modifier: Modifier = Modifier, label: String, value: String) {
     Card(
