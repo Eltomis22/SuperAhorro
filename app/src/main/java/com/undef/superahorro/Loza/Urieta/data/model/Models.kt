@@ -1,10 +1,12 @@
 package com.undef.superahorro.Loza.Urieta.data.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 /**
  * Modelos de dominio de la app, ahora convertidos en Entidades de Room.
@@ -73,6 +75,10 @@ data class Producto(
  * (Relación 1 a muchos).
  */
 data class CompraConProductos(
-    val compra: Compra,
+    @Embedded val compra: Compra,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "compraId"
+    )
     val productos: List<Producto>
 )
