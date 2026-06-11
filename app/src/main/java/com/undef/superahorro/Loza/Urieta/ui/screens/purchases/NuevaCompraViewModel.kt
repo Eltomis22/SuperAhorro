@@ -55,6 +55,7 @@ class NuevaCompraViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
+                // Room genera el ID automáticamente si le pasamos 0
                 val nuevaCompra = Compra(
                     id = id ?: 0, 
                     fecha = fecha,
@@ -64,10 +65,8 @@ class NuevaCompraViewModel(
                 )
 
                 if (id == null) {
-                    val res = repository.agregarCompra(nuevaCompra)
-                    // res es de tipo Any? porque MockData.agregarCompra devuelve Unit
-                    // Room devolverá Long. Por ahora, para compilar:
-                    _uiState.update { it.copy(isLoading = false, guardadoExitoso = 0) }
+                    val newId = repository.agregarCompra(nuevaCompra)
+                    _uiState.update { it.copy(isLoading = false, guardadoExitoso = newId.toInt()) }
                 } else {
                     repository.actualizarCompra(nuevaCompra)
                     _uiState.update { it.copy(isLoading = false, guardadoExitoso = id) }

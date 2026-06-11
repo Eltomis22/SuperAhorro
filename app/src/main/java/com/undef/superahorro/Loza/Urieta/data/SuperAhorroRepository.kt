@@ -3,6 +3,7 @@ package com.undef.superahorro.Loza.Urieta.data
 import com.undef.superahorro.Loza.Urieta.data.local.CompraDao
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
+import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,7 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
         MockData.usuarioActual
     }
 
-    // --- COMPRAS (Migrado a Room) ---
+    // --- COMPRAS (Lectura) ---
     
     /** Obtiene todas las compras registradas en tiempo real */
     fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> = compraDao.obtenerTodasLasCompras()
@@ -23,8 +24,9 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
     /** Obtiene todas las compras registradas (Snapshot) */
     suspend fun obtenerCompras(): List<Compra> = withContext(Dispatchers.IO) {
         // En una implementación real con Flow, solemos usar flow.first(), 
-        // pero MockData devolvía List directamente.
-        MockData.compras // Temporal hasta que migremos la escritura
+        // pero para compatibilidad devolvemos una lista vacía si no hay nada
+        // o MockData si se prefiere para pruebas.
+        emptyList() 
     }
 
     /** Obtiene el detalle de una compra específica por su ID */
@@ -50,33 +52,25 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
             MockData.gastoPorSupermercado
         }
 
-    // --- OPERACIONES DE ESCRITURA (MockData temporal hasta Commit 8) ---
+    // --- OPERACIONES DE ESCRITURA (MIGRADO A ROOM) ---
 
-    suspend fun agregarCompra(compra: Compra) = withContext(Dispatchers.IO) {
-        MockData.agregarCompra(compra)
+    suspend fun agregarCompra(compra: Compra): Long = withContext(Dispatchers.IO) {
+        compraDao.insertarCompra(compra)
     }
 
     suspend fun actualizarCompra(compra: Compra) = withContext(Dispatchers.IO) {
-        MockData.actualizarCompra(compra)
+        compraDao.actualizarCompra(compra)
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
-        MockData.eliminarCompra(compraId)
+        compraDao.eliminarCompraPorId(compraId)
     }
 
-    suspend fun agregarProducto(compraId: Int, producto: com.undef.superahorro.Loza.Urieta.data.model.Producto) = withContext(Dispatchers.IO) {
-        MockData.agregarProducto(compraId, producto)
+    suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
+        compraDao.insertarProducto(producto.copy(compraId = compraId))
     }
 
-    suspend fun eliminarProducto(compraId: Int, productoId: Int) = withContext(Dispatchers.IO) {
-        MockData.eliminarProducto(compraId, productoId)
-    }
-
-    suspend fun siguienteIdCompra(): Int = withContext(Dispatchers.IO) {
-        MockData.siguienteIdCompra()
-    }
-
-    suspend fun siguienteIdProducto(): Int = withContext(Dispatchers.IO) {
-        MockData.siguienteIdProducto()
+    suspend fun eliminarProducto(productoId: Int) = withContext(Dispatchers.IO) {
+        compraDao.eliminarProductoPorId(productoId)
     }
 }
