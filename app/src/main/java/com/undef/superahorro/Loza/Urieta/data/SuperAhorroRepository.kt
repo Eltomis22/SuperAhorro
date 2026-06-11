@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class SuperAhorroRepository(
     private val compraDao: CompraDao,
-    private val api: SuperAhorroApi // Inyección de la API de Retrofit
+    private val api: SuperAhorroApi
 ) {
 
     // --- SESIÓN ---
@@ -37,19 +37,12 @@ class SuperAhorroRepository(
 
     // --- DROPDOWNS Y NETWORKING (GET) ---
 
-    /**
-     * Obtiene la lista de supermercados. 
-     * Implementa el requisito GET: intenta descargar de la API, 
-     * si falla usa los datos de MockData.
-     */
     suspend fun obtenerSupermercados(): List<String> = withContext(Dispatchers.IO) {
         try {
             val listaRemota = api.obtenerSupermercados()
-            Log.d("Repository", "Supermercados obtenidos de la API: ${listaRemota.size}")
             listaRemota
         } catch (e: Exception) {
-            Log.e("Repository", "Error al llamar a la API: ${e.message}. Usando MockData.")
-            MockData.supermercados // Fallback
+            MockData.supermercados
         }
     }
 
@@ -62,14 +55,36 @@ class SuperAhorroRepository(
             MockData.gastoPorSupermercado
         }
 
-    // --- OPERACIONES DE ESCRITURA ---
+    // --- OPERACIONES DE ESCRITURA Y NETWORKING (POST) ---
 
+    /**
+     * Agrega una compra localmente y la sincroniza con el servidor (POST).
+     */
     suspend fun agregarCompra(compra: Compra): Long = withContext(Dispatchers.IO) {
-        compraDao.insertarCompra(compra)
+        val id = compraDao.insertarCompra(compra)
+        sincronizarConServidor(compra.copy(id = id.toInt()))
+        id
     }
 
     suspend fun actualizarCompra(compra: Compra) = withContext(Dispatchers.IO) {
         compraDao.actualizarCompra(compra)
+        sincronizarConServidor(compra)
+    }
+
+    /**
+     * Implementa el requisito POST: envía la compra al servidor.
+     */
+    private suspend fun sincronizarConServidor(compra: Compra) {
+        try {
+            val response = api.sincronizarCompra(compra)
+            if (response.isSuccessful) {
+                Log.d("Repository", "Sincronización exitosa: ${response.body()?.message}")
+            } else {
+                Log.e("Repository", "Fallo en sincronización: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            Log.e("Repository", "Error de red al sincronizar: ${e.message}")
+        }
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
