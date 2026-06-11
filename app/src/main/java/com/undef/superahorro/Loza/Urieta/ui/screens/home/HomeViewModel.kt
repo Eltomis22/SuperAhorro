@@ -36,18 +36,20 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 val usuario = repository.obtenerUsuarioActual()
-                val compras = repository.obtenerCompras()
+                
+                // Observamos el Flow de compras en tiempo real
+                repository.obtenerTodasLasComprasFlow().collect { compras ->
+                    val ultimas = compras.take(3)
+                    val total = compras.filter { it.fecha.startsWith("2026") }.sumOf { it.total }
 
-                val ultimas = compras.take(3)
-                val total = compras.filter { it.fecha.startsWith("2026") }.sumOf { it.total }
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        usuarioNombre = usuario.nombre,
-                        ultimasCompras = ultimas,
-                        totalMes = total
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            usuarioNombre = usuario.nombre,
+                            ultimasCompras = ultimas,
+                            totalMes = total
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

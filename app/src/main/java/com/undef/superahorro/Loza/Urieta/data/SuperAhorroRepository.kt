@@ -1,17 +1,22 @@
 package com.undef.superahorro.Loza.Urieta.data
 
+import android.util.Log
 import com.undef.superahorro.Loza.Urieta.data.local.CompraDao
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.User
+import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class SuperAhorroRepository(private val compraDao: CompraDao) {
+class SuperAhorroRepository(
+    private val compraDao: CompraDao,
+    private val api: SuperAhorroApi // Inyección de la API de Retrofit
+) {
 
-    // --- SESIÓN (Temporalmente sigue en MockData hasta el commit de DataStore/Session) ---
+    // --- SESIÓN ---
     suspend fun obtenerUsuarioActual(): User = withContext(Dispatchers.IO) {
         MockData.usuarioActual
     }
@@ -20,14 +25,6 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
     
     /** Obtiene todas las compras registradas en tiempo real */
     fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> = compraDao.obtenerTodasLasCompras()
-
-    /** Obtiene todas las compras registradas (Snapshot) */
-    suspend fun obtenerCompras(): List<Compra> = withContext(Dispatchers.IO) {
-        // En una implementación real con Flow, solemos usar flow.first(), 
-        // pero para compatibilidad devolvemos una lista vacía si no hay nada
-        // o MockData si se prefiere para pruebas.
-        emptyList() 
-    }
 
     /** Obtiene el detalle de una compra específica por su ID */
     suspend fun obtenerCompraPorId(id: Int): Compra? = withContext(Dispatchers.IO) {
@@ -38,9 +35,22 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
     fun obtenerCompraConProductos(id: Int): Flow<CompraConProductos?> = 
         compraDao.obtenerCompraConProductos(id)
 
-    // --- DROPDOWNS Y OTROS ---
+    // --- DROPDOWNS Y NETWORKING (GET) ---
+
+    /**
+     * Obtiene la lista de supermercados. 
+     * Implementa el requisito GET: intenta descargar de la API, 
+     * si falla usa los datos de MockData.
+     */
     suspend fun obtenerSupermercados(): List<String> = withContext(Dispatchers.IO) {
-        MockData.supermercados
+        try {
+            val listaRemota = api.obtenerSupermercados()
+            Log.d("Repository", "Supermercados obtenidos de la API: ${listaRemota.size}")
+            listaRemota
+        } catch (e: Exception) {
+            Log.e("Repository", "Error al llamar a la API: ${e.message}. Usando MockData.")
+            MockData.supermercados // Fallback
+        }
     }
 
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
@@ -52,7 +62,7 @@ class SuperAhorroRepository(private val compraDao: CompraDao) {
             MockData.gastoPorSupermercado
         }
 
-    // --- OPERACIONES DE ESCRITURA (MIGRADO A ROOM) ---
+    // --- OPERACIONES DE ESCRITURA ---
 
     suspend fun agregarCompra(compra: Compra): Long = withContext(Dispatchers.IO) {
         compraDao.insertarCompra(compra)
