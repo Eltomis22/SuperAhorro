@@ -7,25 +7,6 @@ import com.undef.superahorro.Loza.Urieta.data.model.User
 
 /**
  * Almacén de datos mockeados para la 1ra entrega.
- *
- * Funciona como una "base de datos en memoria" reactiva:
- * - usuarioActual:    User logueado (placeholder).
- * - supermercados:    lista fija de comercios sugeridos para autocompletado.
- * - compras:          mutableStateListOf con TODAS las compras del usuario.
- *                     Compose observa esta lista y recompone la UI cada vez
- *                     que cambia (agregar / actualizar / eliminar).
- * - gastoMensual y gastoPorSupermercado: datos precalculados para los gráficos
- *                     de la pantalla de Estadísticas.
- *
- * Funciones de mutación expuestas:
- *   - siguienteIdCompra() / siguienteIdProducto()
- *   - agregarCompra(c) / eliminarCompra(id) / actualizarCompra(c)
- *   - agregarProducto(compraId, p) / eliminarProducto(compraId, productoId)
- *
- * Por qué object (singleton): para que cualquier pantalla pueda leer y mutar
- * el mismo estado sin tener que pasarlo por parámetros. En la 2da entrega esto
- * se va a reemplazar por un Repository con Room, pero la API pública seguirá
- * siendo prácticamente la misma.
  */
 object MockData {
 
@@ -47,25 +28,22 @@ object MockData {
     )
 
     private val productosCompra1 = listOf(
-        Producto(1, "7790070410016", "Leche La Serenísima", "Leche entera 1L", 2, 950.0),
-        Producto(2, "7790580121204", "Pan Lactal Bimbo", "Pan lactal blanco 540g", 1, 1850.0),
-        Producto(3, "7790520005014", "Aceite Natura", "Aceite girasol 1.5L", 1, 3200.0)
+        Producto(id = 1, compraId = 1, codigo = "7790070410016", nombre = "Leche La Serenísima", descripcion = "Leche entera 1L", cantidad = 2, precio = 950.0),
+        Producto(id = 2, compraId = 1, codigo = "7790580121204", nombre = "Pan Lactal Bimbo", descripcion = "Pan lactal blanco 540g", cantidad = 1, precio = 1850.0),
+        Producto(id = 3, compraId = 1, codigo = "7790520005014", nombre = "Aceite Natura", descripcion = "Aceite girasol 1.5L", cantidad = 1, precio = 3200.0)
     )
 
     private val productosCompra2 = listOf(
-        Producto(4, "7791001000034", "Yerba Taragüí", "Yerba mate 1kg", 1, 4500.0),
-        Producto(5, "7790070401120", "Queso Cremoso", "Queso cremoso 500g", 1, 3800.0),
-        Producto(6, "7791290001008", "Galletitas Oreo", "Galletitas chocolate 118g", 3, 1200.0)
+        Producto(id = 4, compraId = 2, codigo = "7791001000034", nombre = "Yerba Taragüí", descripcion = "Yerba mate 1kg", cantidad = 1, precio = 4500.0),
+        Producto(id = 5, compraId = 2, codigo = "7790070401120", nombre = "Queso Cremoso", descripcion = "Queso cremoso 500g", cantidad = 1, precio = 3800.0),
+        Producto(id = 6, compraId = 2, codigo = "7791290001008", nombre = "Galletitas Oreo", descripcion = "Galletitas chocolate 118g", cantidad = 3, precio = 1200.0)
     )
 
     private val productosCompra3 = listOf(
-        Producto(7, "7790040502154", "Coca Cola", "Gaseosa 2.25L", 2, 2100.0),
-        Producto(8, "7791540067519", "Detergente Magistral", "Detergente 750ml", 1, 1950.0)
+        Producto(id = 7, compraId = 3, codigo = "7790040502154", nombre = "Coca Cola", descripcion = "Gaseosa 2.25L", cantidad = 2, precio = 2100.0),
+        Producto(id = 8, compraId = 3, codigo = "7791540067519", nombre = "Detergente Magistral", descripcion = "Detergente 750ml", cantidad = 1, precio = 1950.0)
     )
 
-    /**
-     * Lista reactiva de compras. Usar agregarCompra / agregarProducto para mutar.
-     */
     val compras = mutableStateListOf(
         Compra(
             id = 1,
@@ -107,33 +85,24 @@ object MockData {
         )
     )
 
-    /** Devuelve el siguiente ID de compra disponible. */
     fun siguienteIdCompra(): Int = (compras.maxOfOrNull { it.id } ?: 0) + 1
 
-    /** Devuelve el siguiente ID de producto disponible (global). */
     fun siguienteIdProducto(): Int =
         (compras.flatMap { it.productos }.maxOfOrNull { it.id } ?: 0) + 1
 
-    /** Agrega una compra al inicio de la lista para que aparezca arriba en los listados. */
     fun agregarCompra(compra: Compra) {
         compras.add(0, compra)
     }
 
-    /** Elimina una compra por su id. Útil para hacer rollback al cancelar el alta. */
     fun eliminarCompra(compraId: Int) {
         compras.removeAll { it.id == compraId }
     }
 
-    /**
-     * Reemplaza una compra existente conservando sus productos.
-     * Se usa para editar fecha/hora/supermercado/total desde el formulario.
-     */
     fun actualizarCompra(compraEditada: Compra) {
         val idx = compras.indexOfFirst { it.id == compraEditada.id }
         if (idx >= 0) compras[idx] = compraEditada
     }
 
-    /** Elimina un producto específico de una compra dada. */
     fun eliminarProducto(compraId: Int, productoId: Int) {
         val idx = compras.indexOfFirst { it.id == compraId }
         if (idx < 0) return
@@ -143,27 +112,15 @@ object MockData {
         )
     }
 
-    /**
-     * Agrega un producto a la compra indicada.
-     *
-     * IMPORTANTE: el total de la compra NO se modifica al agregar productos.
-     * El total representa el monto del ticket (lo que el usuario pagó), mientras
-     * que los productos son el detalle de qué se compró. Pueden no coincidir
-     * exactamente (descuentos, productos no detallados, etc.).
-     *
-     * Si la compra no existe, no hace nada.
-     */
     fun agregarProducto(compraId: Int, producto: Producto) {
         val idx = compras.indexOfFirst { it.id == compraId }
         if (idx < 0) return
         val compra = compras[idx]
         compras[idx] = compra.copy(
             productos = compra.productos + producto
-            // total se mantiene igual a propósito
         )
     }
 
-    /** Estadísticas precalculadas para la pantalla de gráficos. */
     val gastoMensual = listOf(
         "Nov" to 28500.0,
         "Dic" to 41200.0,

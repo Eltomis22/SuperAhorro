@@ -1,16 +1,13 @@
 package com.undef.superahorro.Loza.Urieta.data.model
 
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Ignore
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
 /**
- * Modelos de dominio de la app.
- *
- * Son data class de Kotlin: el compilador genera automáticamente equals(),
- * hashCode(), toString() y copy(). El método copy(...) es el que usamos
- * en MockData.actualizarCompra para crear una compra modificada manteniendo
- * los demás campos sin tocar.
- *
- * Para la 1ra entrega son data class simples; en la 2da entrega se mapearán
- * a entidades Room agregándoles las anotaciones @Entity, @PrimaryKey, etc.
- * El cambio será mínimo y compatible con todo el código que ya las usa.
+ * Modelos de dominio de la app, ahora convertidos en Entidades de Room.
  */
 
 /** Usuario logueado. avatarUrl es nullable porque puede no tener foto. */
@@ -22,27 +19,45 @@ data class User(
 )
 
 /**
- * Una compra de supermercado. La total es lo que pagó el usuario en el ticket
- * y NO se calcula a partir de los productos: ambos son independientes
- * (puede haber descuentos, productos no detallados, etc.).
+ * Una compra de supermercado.
  */
+@Entity(tableName = "compras")
 data class Compra(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val fecha: String,            // formato yyyy-MM-dd
     val hora: String,             // formato HH:mm
     val supermercado: String,
     val total: Double,
     val ticketImagenUri: String? = null,
-    val productos: List<Producto> = emptyList()
-)
+    
+    @Ignore
+    val productos: List<Producto> = emptyList() // Temporal para compatibilidad con MockData
+) {
+    // Constructor secundario para Room (ya que ignora 'productos')
+    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, ticketImagenUri: String?) : 
+        this(id, fecha, hora, supermercado, total, ticketImagenUri, emptyList())
+}
 
 /**
- * Producto comprado dentro de una compra. El subtotal se calcula en tiempo
- * de lectura (computed property) — no hace falta guardarlo, evitando que
- * quede desactualizado si se cambia la cantidad o el precio.
+ * Producto comprado dentro de una compra.
  */
+@Entity(
+    tableName = "productos",
+    foreignKeys = [
+        ForeignKey(
+            entity = Compra::class,
+            parentColumns = ["id"],
+            childColumns = ["compraId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["compraId"])]
+)
 data class Producto(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val compraId: Int = 0, // Relación con la compra (default 0 para MockData temporal)
     val codigo: String,
     val nombre: String,
     val descripcion: String,
@@ -52,3 +67,12 @@ data class Producto(
     /** Computed property: cantidad × precio, calculado al leer. */
     val subtotal: Double get() = cantidad * precio
 }
+
+/**
+ * Clase de soporte para obtener una compra con todos sus productos
+ * (Relación 1 a muchos).
+ */
+data class CompraConProductos(
+    val compra: Compra,
+    val productos: List<Producto>
+)

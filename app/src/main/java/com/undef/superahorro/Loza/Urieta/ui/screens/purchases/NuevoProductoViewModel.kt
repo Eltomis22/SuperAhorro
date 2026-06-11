@@ -36,6 +36,7 @@ class NuevoProductoViewModel(
             try {
                 val nuevoProducto = Producto(
                     id = repository.siguienteIdProducto(),
+                    compraId = compraId,
                     codigo = codigo,
                     nombre = nombre,
                     descripcion = descripcion,
