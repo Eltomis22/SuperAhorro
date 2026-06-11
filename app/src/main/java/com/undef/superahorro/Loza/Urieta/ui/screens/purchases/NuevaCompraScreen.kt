@@ -1,5 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
+import android.net.Uri
+import android.os.Environment
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
@@ -43,16 +48,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -67,15 +77,37 @@ fun NuevaCompraScreen(
     viewModel: NuevaCompraViewModel = viewModel(factory = NuevaCompraViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
-    // Manejar el éxito del guardado
+    // --- LÓGICA DE CÁMARA (INTENTS) ---
+    var ticketUri by remember { mutableStateOf<Uri?>(null) }
+    
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (!success) ticketUri = null
+    }
+
+    fun launchCamera() {
+        val file = File(
+            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            "ticket_${System.currentTimeMillis()}.jpg"
+        )
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        ticketUri = uri
+        cameraLauncher.launch(uri)
+    }
+
     LaunchedEffect(state.guardadoExitoso) {
         state.guardadoExitoso?.let { id ->
             onCompraGuardada(id)
         }
     }
 
-    // Por defecto fecha y hora actuales del dispositivo
     val hoy = remember { LocalDate.now().toString() }
     val ahora = remember {
         LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -87,20 +119,19 @@ fun NuevaCompraScreen(
     var total by remember { mutableStateOf("") }
     var menuExpanded by remember { mutableStateOf(false) }
 
-    // Cargar datos si es edición
     LaunchedEffect(compraIdParaEditar) {
         compraIdParaEditar?.let { id ->
             viewModel.cargarCompraParaEditar(id)
         }
     }
 
-    // Actualizar campos cuando se carga la compra
     LaunchedEffect(state.compraCargada) {
         state.compraCargada?.let { compra ->
             fecha = compra.fecha
             hora = compra.hora
             supermercado = compra.supermercado
             total = Formatters.formatearMiles(compra.total.toLong().toString())
+            ticketUri = compra.ticketImagenUri?.let { Uri.parse(it) }
         }
     }
 
@@ -202,13 +233,14 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // CARD DE CÁMARA (INTERACCIÓN CON DISPOSITIVO)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clickable { /* TODO: galería/cámara */ },
+                    .clickable { launchCamera() },
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (ticketUri != null) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.primaryContainer
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -221,24 +253,25 @@ fun NuevaCompraScreen(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(28.dp))
-                            .background(MaterialTheme.colorScheme.primary),
+                            .background(if (ticketUri != null) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.AddAPhoto,
+                            imageVector = if (ticketUri != null) Icons.Filled.CheckCircle else Icons.Filled.AddAPhoto,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = Color.White
                         )
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.new_purchase_attach_ticket),
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = if (ticketUri != null) "¡Ticket capturado!" else stringResource(R.string.new_purchase_attach_ticket),
+                        fontWeight = FontWeight.Bold,
+                        color = if (ticketUri != null) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = stringResource(R.string.new_purchase_attach_hint),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        text = if (ticketUri != null) "Toca para cambiar la foto" else stringResource(R.string.new_purchase_attach_hint),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -255,7 +288,8 @@ fun NuevaCompraScreen(
                         fecha = fecha,
                         hora = hora,
                         supermercado = supermercado,
-                        total = totalNumerico ?: 0.0
+                        total = totalNumerico ?: 0.0,
+                        ticketImagenUri = ticketUri?.toString()
                     )
                 },
                 enabled = formularioValido && !state.isLoading,

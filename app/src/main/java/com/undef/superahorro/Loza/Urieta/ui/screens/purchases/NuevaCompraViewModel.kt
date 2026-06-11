@@ -50,18 +50,19 @@ class NuevaCompraViewModel(
         fecha: String,
         hora: String,
         supermercado: String,
-        total: Double
+        total: Double,
+        ticketImagenUri: String? = null
     ) {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                // Room genera el ID automáticamente si le pasamos 0
                 val nuevaCompra = Compra(
                     id = id ?: 0, 
                     fecha = fecha,
                     hora = hora,
                     supermercado = supermercado,
-                    total = total
+                    total = total,
+                    ticketImagenUri = ticketImagenUri
                 )
 
                 if (id == null) {
