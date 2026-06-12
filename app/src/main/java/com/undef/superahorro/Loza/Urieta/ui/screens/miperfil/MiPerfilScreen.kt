@@ -178,7 +178,10 @@ fun MiPerfilScreen(
                     item {
                         Spacer(Modifier.height(16.dp))
                         OutlinedButton(
-                            onClick = onLogout,
+                            onClick = {
+                                viewModel.cerrarSesion()
+                                onLogout()
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp),

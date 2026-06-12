@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,15 +26,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onTimeout: () -> Unit) {
+fun SplashScreen(
+    onNavigateToLogin: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    viewModel: SplashViewModel = viewModel(factory = SplashViewModel.Factory)
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        delay(2000)
-        onTimeout()
+    LaunchedEffect(state.isCheckingSession) {
+        if (!state.isCheckingSession) {
+            delay(2000) // Tiempo visual del splash
+            if (state.isLoggedIn) {
+                onNavigateToHome()
+            } else {
+                onNavigateToLogin()
+            }
+        }
     }
 
     Box(
