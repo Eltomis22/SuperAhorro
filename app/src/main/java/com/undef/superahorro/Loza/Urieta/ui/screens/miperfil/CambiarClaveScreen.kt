@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
@@ -36,7 +40,9 @@ fun CambiarClaveScreen(
     viewModel: MiPerfilViewModel = viewModel(factory = MiPerfilViewModel.Factory)
 ) {
     var nuevaClave by remember { mutableStateOf("") }
+    var nuevaClaveVisible by remember { mutableStateOf(false) }
     var confirmarClave by remember { mutableStateOf("") }
+    var confirmarClaveVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -57,7 +63,15 @@ fun CambiarClaveScreen(
                 onValueChange = { nuevaClave = it },
                 label = { Text("Nueva Contraseña") },
                 leadingIcon = { Icon(Icons.Filled.Lock, null) },
-                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { nuevaClaveVisible = !nuevaClaveVisible }) {
+                        Icon(
+                            imageVector = if (nuevaClaveVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null
+                        )
+                    }
+                },
+                visualTransformation = if (nuevaClaveVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -69,7 +83,15 @@ fun CambiarClaveScreen(
                 onValueChange = { confirmarClave = it },
                 label = { Text("Confirmar Contraseña") },
                 leadingIcon = { Icon(Icons.Filled.Lock, null) },
-                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { confirmarClaveVisible = !confirmarClaveVisible }) {
+                        Icon(
+                            imageVector = if (confirmarClaveVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null
+                        )
+                    }
+                },
+                visualTransformation = if (confirmarClaveVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

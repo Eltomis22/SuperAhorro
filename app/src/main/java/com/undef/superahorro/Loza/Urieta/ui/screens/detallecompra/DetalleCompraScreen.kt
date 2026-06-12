@@ -54,6 +54,7 @@ import androidx.navigation.NavHostController
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.navigation.Screen
+import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +89,7 @@ fun DetalleCompraScreen(
                         IconButton(onClick = {
                             val texto = shareTemplate.format(
                                 compra.supermercado,
-                                compra.fecha,
+                                Formatters.formatearFecha(compra.fecha),
                                 "%,.0f".format(compra.total)
                             )
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -174,7 +175,7 @@ fun DetalleCompraScreen(
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = "${compra.fecha} · ${compra.hora}",
+                                    text = "${Formatters.formatearFecha(compra.fecha)} · ${compra.hora}",
                                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                                     fontSize = 12.sp
                                 )

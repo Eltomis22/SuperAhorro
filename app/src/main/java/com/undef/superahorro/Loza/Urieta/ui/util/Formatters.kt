@@ -4,11 +4,26 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * Helpers para formatear y parsear montos con separador de miles "punto".
  */
 object Formatters {
+
+    private val dbDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val uiDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    /** Convierte fecha de DB (yyyy-MM-dd) a UI (dd/MM/yyyy) */
+    fun formatearFecha(fecha: String): String {
+        return try {
+            val localDate = LocalDate.parse(fecha, dbDateFormatter)
+            localDate.format(uiDateFormatter)
+        } catch (e: Exception) {
+            fecha // Si falla, devolvemos el original
+        }
+    }
 
     /** Toma sólo dígitos de la entrada y los formatea con punto cada 3 cifras. */
     fun formatearMiles(input: String): String {

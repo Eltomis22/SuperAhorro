@@ -275,7 +275,7 @@ fun NuevaCompraScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.weight(1f).clickable { showDatePicker = true }) {
                     OutlinedTextField(
-                        value = fecha,
+                        value = Formatters.formatearFecha(fecha),
                         onValueChange = { },
                         readOnly = true,
                         label = { Text(stringResource(R.string.label_date)) },

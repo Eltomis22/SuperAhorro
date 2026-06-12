@@ -66,7 +66,7 @@ fun CompraResumenCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${compra.fecha} · ${compra.hora}",
+                    text = "${Formatters.formatearFecha(compra.fecha)} · ${compra.hora}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
