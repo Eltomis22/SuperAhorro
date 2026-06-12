@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 
@@ -37,12 +40,21 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: RegisterViewModel = viewModel(factory = RegisterViewModel.Factory)
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    LaunchedEffect(state.registroExitoso) {
+        if (state.registroExitoso) {
+            onRegisterSuccess()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -112,7 +124,6 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Validación visual para la 1ra entrega
             val emailValido = email.contains("@") && email.contains(".")
             val passwordsCoinciden = password.isNotBlank() && password == confirmPassword
             val formularioValido = nombre.isNotBlank() &&
@@ -120,7 +131,6 @@ fun RegisterScreen(
                     password.length >= 4 &&
                     passwordsCoinciden
 
-            // Mensaje de ayuda si las contraseñas no coinciden
             if (confirmPassword.isNotBlank() && password != confirmPassword) {
                 Text(
                     text = stringResource(R.string.register_password_mismatch),
@@ -134,8 +144,8 @@ fun RegisterScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = onRegisterSuccess,
-                enabled = formularioValido,
+                onClick = { viewModel.registrarUsuario(nombre, email, password) },
+                enabled = formularioValido && !state.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

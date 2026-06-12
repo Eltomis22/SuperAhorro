@@ -28,11 +28,13 @@ class EstadisticasViewModel(
             try {
                 val mensual = repository.obtenerGastoMensual()
                 val porSuper = repository.obtenerGastoPorSupermercado()
+                val topProductos = repository.obtenerProductosMasComprados()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         gastoMensual = mensual,
-                        gastoPorSupermercado = porSuper
+                        gastoPorSupermercado = porSuper,
+                        productosMasComprados = topProductos
                     )
                 }
             } catch (e: Exception) {

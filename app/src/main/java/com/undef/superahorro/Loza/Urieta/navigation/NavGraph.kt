@@ -16,6 +16,9 @@ import com.undef.superahorro.Loza.Urieta.ui.screens.estadisticas.EstadisticasScr
 import com.undef.superahorro.Loza.Urieta.ui.screens.home.HomeScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.listadocompras.ListadoComprasScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.MiPerfilScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.EditarPerfilScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.CambiarClaveScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.CambiarEmailScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.HistorialComprasScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevaCompraScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevoProductoScreen
@@ -32,10 +35,6 @@ fun SuperAhorroNavGraph(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
-
-        // ================================================================
-        // FLUJO DE AUTENTICACIÓN
-        // ================================================================
 
         composable(Screen.Splash.route) {
             SplashScreen(
@@ -77,10 +76,6 @@ fun SuperAhorroNavGraph(
             )
         }
 
-        // ================================================================
-        // PANTALLAS PRINCIPALES (con BottomBar)
-        // ================================================================
-
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }
@@ -104,17 +99,28 @@ fun SuperAhorroNavGraph(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onEditProfile = { navController.navigate(Screen.EditarPerfil.route) },
+                onChangePassword = { navController.navigate(Screen.CambiarClave.route) },
+                onChangeEmail = { navController.navigate(Screen.CambiarEmail.route) }
             )
+        }
+
+        composable(Screen.EditarPerfil.route) {
+            EditarPerfilScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.CambiarClave.route) {
+            CambiarClaveScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.CambiarEmail.route) {
+            CambiarEmailScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Screen.Settings.route) {
             SettingsScreen(navController = navController)
         }
-
-        // ================================================================
-        // FLUJO DE COMPRAS (CRUD)
-        // ================================================================
 
         composable(Screen.NuevaCompra.route) {
             NuevaCompraScreen(

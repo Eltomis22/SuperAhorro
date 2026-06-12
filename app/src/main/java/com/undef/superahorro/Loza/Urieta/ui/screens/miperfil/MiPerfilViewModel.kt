@@ -6,9 +6,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.undef.superahorro.Loza.Urieta.data.SettingsRepository
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
+import com.undef.superahorro.Loza.Urieta.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,18 +30,48 @@ class MiPerfilViewModel(
     private fun cargarPerfil() {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            try {
-                val user = repository.obtenerUsuarioActual()
+            combine(
+                settingsRepository.userNameFlow,
+                settingsRepository.userEmailFlow
+            ) { name, email ->
+                User(id = 0, nombre = name, email = email)
+            }.collect { user ->
                 _uiState.update { it.copy(isLoading = false, usuario = user) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
+        }
+    }
+
+    fun actualizarNombre(nuevoNombre: String) {
+        viewModelScope.launch {
+            val emailActual = settingsRepository.userEmailFlow.first()
+            // Actualizamos en Room
+            repository.actualizarNombreUsuario(emailActual, nuevoNombre)
+            // Actualizamos en DataStore
+            settingsRepository.setLoggedIn(isLoggedIn = true, name = nuevoNombre, email = emailActual)
+        }
+    }
+
+    fun actualizarClave(nuevaClave: String) {
+        viewModelScope.launch {
+            val emailActual = settingsRepository.userEmailFlow.first()
+            repository.actualizarClaveUsuario(emailActual, nuevaClave)
+        }
+    }
+
+    fun actualizarEmail(nuevoEmail: String) {
+        viewModelScope.launch {
+            val emailViejo = settingsRepository.userEmailFlow.first()
+            val nombreActual = settingsRepository.userNameFlow.first()
+            // Actualizamos en Room
+            repository.actualizarEmailUsuario(emailViejo, nuevoEmail)
+            // Actualizamos en DataStore
+            settingsRepository.setLoggedIn(isLoggedIn = true, name = nombreActual, email = nuevoEmail)
         }
     }
 
     fun cerrarSesion() {
         viewModelScope.launch {
-            settingsRepository.setLoggedIn(false)
+            settingsRepository.clearSession()
         }
     }
 

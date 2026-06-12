@@ -2,20 +2,26 @@ package com.undef.superahorro.Loza.Urieta.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta verde / ahorro
-val GreenPrimary = Color(0xFF2E7D32)
-val GreenPrimaryDark = Color(0xFF1B5E20)
-val GreenSecondary = Color(0xFF66BB6A)
-val GreenAccent = Color(0xFFA5D6A7)
-val GreenSurface = Color(0xFFE8F5E9)
+// Paleta Premium: Bosque Esmeralda
+val GreenPrimary = Color(0xFF004D40)      // Verde azulado profundo (Teal 900)
+val GreenPrimaryDark = Color(0xFF00251A)
+val GreenSecondary = Color(0xFF00897B)    // Teal 600
+val GreenAccent = Color(0xFF4DB6AC)       // Teal 300
+val GreenSurface = Color(0xFFF1F8F7)      // Superficie muy clara tipo menta
 
-val Background = Color(0xFFF7FAF7)
-val BackgroundDark = Color(0xFF121712)
-val SurfaceDark = Color(0xFF1E251E)
+// Neutros Modernos
+val Background = Color(0xFFFBFDFA)
+val BackgroundDark = Color(0xFF0E1312)
+val SurfaceDark = Color(0xFF171D1B)
 
-val TextPrimary = Color(0xFF1B1B1B)
-val TextSecondary = Color(0xFF5F6B5F)
+val TextPrimary = Color(0xFF1A1C1E)
+val TextSecondary = Color(0xFF42474E)
 val TextOnPrimary = Color(0xFFFFFFFF)
 
-val ErrorRed = Color(0xFFC62828)
-val WarningAmber = Color(0xFFF9A825)
+val ErrorRed = Color(0xFFBA1A1A)
+val WarningAmber = Color(0xFFFBC02D)
+
+// Colores para Gráficos
+val ChartColor1 = Color(0xFF00796B)
+val ChartColor2 = Color(0xFF4DB6AC)
+val ChartColor3 = Color(0xFF80CBC4)

@@ -63,7 +63,9 @@ fun NuevoProductoScreen(
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("1") }
-    var precio by remember { mutableStateOf("") }
+    
+    // Cambiamos a 'precioRaw' para evitar saltos del cursor
+    var precioRaw by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -124,28 +126,33 @@ fun NuevoProductoScreen(
                 OutlinedTextField(
                     value = cantidad,
                     onValueChange = { input ->
-                        cantidad = input.filter { c -> c.isDigit() }
+                        if (input.all { it.isDigit() }) {
+                            cantidad = input
+                        }
                     },
                     label = { Text(stringResource(R.string.label_quantity)) },
                     leadingIcon = { Icon(Icons.Filled.Numbers, null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(0.8f)
                 )
                 OutlinedTextField(
-                    value = precio,
+                    value = precioRaw,
                     onValueChange = { input ->
-                        precio = Formatters.formatearMiles(input)
+                        if (input.all { it.isDigit() }) {
+                            precioRaw = input
+                        }
                     },
                     label = { Text(stringResource(R.string.label_price)) },
                     leadingIcon = { Icon(Icons.Filled.AttachMoney, null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f)
+                    visualTransformation = Formatters.ThousandsSeparatorTransformation(), // Fix para el cursor
+                    modifier = Modifier.weight(1.2f)
                 )
             }
 
             Spacer(Modifier.height(24.dp))
 
-            val precioNumerico = Formatters.parsearMiles(precio)
+            val precioNumerico = precioRaw.toDoubleOrNull()
             val cantidadNumerica = cantidad.toIntOrNull() ?: 1
             val formularioValido = nombre.isNotBlank() && precioNumerico != null && precioNumerico > 0
 

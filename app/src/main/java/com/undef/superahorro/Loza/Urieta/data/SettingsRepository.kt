@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -21,8 +22,16 @@ class SettingsRepository(private val context: Context) {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val USE_ENGLISH = booleanPreferencesKey("use_english")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
-        val USER_ID = booleanPreferencesKey("user_id") // Simplificado para persistencia de ejemplo
+        val USER_ID = booleanPreferencesKey("user_id") 
+        val USER_NAME = stringPreferencesKey("user_name")
+        val USER_EMAIL = stringPreferencesKey("user_email")
     }
+
+    /** Obtiene el nombre del usuario guardado */
+    val userNameFlow: Flow<String> = context.dataStore.data.map { it[PreferencesKeys.USER_NAME] ?: "Usuario" }
+
+    /** Obtiene el email del usuario guardado */
+    val userEmailFlow: Flow<String> = context.dataStore.data.map { it[PreferencesKeys.USER_EMAIL] ?: "usuario@email.com" }
 
     /** Observa si el usuario está logueado */
     val isLoggedInFlow: Flow<Boolean> = context.dataStore.data
@@ -77,10 +86,12 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    /** Actualiza el estado de la sesión */
-    suspend fun setLoggedIn(isLoggedIn: Boolean) {
+    /** Actualiza el estado de la sesión y datos básicos del usuario */
+    suspend fun setLoggedIn(isLoggedIn: Boolean, name: String? = null, email: String? = null) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_LOGGED_IN] = isLoggedIn
+            name?.let { preferences[PreferencesKeys.USER_NAME] = it }
+            email?.let { preferences[PreferencesKeys.USER_EMAIL] = it }
         }
     }
 

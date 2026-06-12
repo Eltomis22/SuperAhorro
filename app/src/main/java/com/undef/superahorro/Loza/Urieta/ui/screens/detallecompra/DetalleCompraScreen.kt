@@ -1,7 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.detallecompra
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -98,7 +100,11 @@ fun DetalleCompraScreen(
                             Icon(Icons.Filled.Share, null)
                         }
                     }
-                    IconButton(onClick = { /* TODO editar */ }) {
+                    IconButton(onClick = {
+                        state.compra?.let {
+                            navController.navigate(Screen.EditarCompra.createRoute(it.id))
+                        }
+                    }) {
                         Icon(Icons.Filled.Edit, null)
                     }
                     IconButton(onClick = { /* TODO eliminar */ }) {
@@ -192,10 +198,26 @@ fun DetalleCompraScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp),
+                                .height(120.dp)
+                                .clickable {
+                                    compra.ticketImagenUri?.let { uriString ->
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                setDataAndType(Uri.parse(uriString), "image/*")
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            // Si no hay visor de imágenes o falla
+                                        }
+                                    }
+                                },
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                containerColor = if (compra.ticketImagenUri != null) 
+                                    MaterialTheme.colorScheme.primaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.surfaceVariant
                             )
                         ) {
                             Row(

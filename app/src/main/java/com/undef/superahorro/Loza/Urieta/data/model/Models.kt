@@ -12,12 +12,22 @@ import androidx.room.Relation
  * Modelos de dominio de la app, ahora convertidos en Entidades de Room.
  */
 
-/** Usuario logueado. avatarUrl es nullable porque puede no tener foto. */
+/** Usuario logueado (Domain model) */
 data class User(
     val id: Int,
     val nombre: String,
     val email: String,
     val avatarUrl: String? = null
+)
+
+/** Entidad de Usuario para Room (Persistence model) */
+@Entity(tableName = "usuarios")
+data class UserEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val nombre: String,
+    val email: String,
+    val clave: String // En una app real esto debería estar hasheado
 )
 
 /**

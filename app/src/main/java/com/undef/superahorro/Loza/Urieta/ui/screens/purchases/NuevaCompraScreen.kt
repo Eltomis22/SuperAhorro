@@ -1,7 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
+import android.Manifest
 import android.net.Uri
 import android.os.Environment
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.AttachMoney
@@ -29,6 +32,8 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -37,8 +42,13 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +65,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,8 +72,10 @@ import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 import java.io.File
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
@@ -79,7 +90,7 @@ fun NuevaCompraScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // --- LÓGICA DE CÁMARA (INTENTS) ---
+    // --- LÓGICA DE CÁMARA ---
     var ticketUri by remember { mutableStateOf<Uri?>(null) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -88,18 +99,88 @@ fun NuevaCompraScreen(
         if (!success) ticketUri = null
     }
 
-    fun launchCamera() {
-        val file = File(
-            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-            "ticket_${System.currentTimeMillis()}.jpg"
-        )
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
-        ticketUri = uri
-        cameraLauncher.launch(uri)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val file = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "ticket_${System.currentTimeMillis()}.jpg"
+            )
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+            ticketUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // --- ESTADO DEL FORMULARIO ---
+    var fecha by remember { mutableStateOf(LocalDate.now().toString()) }
+    var hora by remember { mutableStateOf(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))) }
+    var supermercado by remember { mutableStateOf("") }
+    
+    // Cambiamos 'total' para que guarde el texto crudo (sin puntos) mientras se escribe
+    var totalRaw by remember { mutableStateOf("") }
+    
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    // --- DIÁLOGOS DE FECHA Y HORA ---
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = Instant.now().toEpochMilli()
+    )
+    val timePickerState = rememberTimePickerState(
+        initialHour = LocalTime.now().hour,
+        initialMinute = LocalTime.now().minute
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val selectedDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        fecha = selectedDate.toString()
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    hora = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+                    showTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                TimePicker(state = timePickerState)
+            }
+        }
     }
 
     LaunchedEffect(state.guardadoExitoso) {
@@ -107,17 +188,6 @@ fun NuevaCompraScreen(
             onCompraGuardada(id)
         }
     }
-
-    val hoy = remember { LocalDate.now().toString() }
-    val ahora = remember {
-        LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-    }
-
-    var fecha by remember { mutableStateOf(hoy) }
-    var hora by remember { mutableStateOf(ahora) }
-    var supermercado by remember { mutableStateOf("") }
-    var total by remember { mutableStateOf("") }
-    var menuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(compraIdParaEditar) {
         compraIdParaEditar?.let { id ->
@@ -130,7 +200,7 @@ fun NuevaCompraScreen(
             fecha = compra.fecha
             hora = compra.hora
             supermercado = compra.supermercado
-            total = Formatters.formatearMiles(compra.total.toLong().toString())
+            totalRaw = compra.total.toLong().toString()
             ticketUri = compra.ticketImagenUri?.let { Uri.parse(it) }
         }
     }
@@ -156,6 +226,7 @@ fun NuevaCompraScreen(
                 .padding(16.dp)
         ) {
 
+            // SUPERMERCADO
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
                 onExpandedChange = { menuExpanded = it }
@@ -200,45 +271,72 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // FECHA Y HORA (CON PICKERS)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = fecha,
-                    onValueChange = { fecha = it },
-                    label = { Text(stringResource(R.string.label_date)) },
-                    leadingIcon = { Icon(Icons.Filled.CalendarToday, null) },
-                    modifier = Modifier.weight(1f)
-                )
-                OutlinedTextField(
-                    value = hora,
-                    onValueChange = { hora = it },
-                    label = { Text(stringResource(R.string.label_time)) },
-                    leadingIcon = { Icon(Icons.Filled.Schedule, null) },
-                    modifier = Modifier.weight(1f)
-                )
+                Box(modifier = Modifier.weight(1f).clickable { showDatePicker = true }) {
+                    OutlinedTextField(
+                        value = fecha,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.label_date)) },
+                        leadingIcon = { Icon(Icons.Filled.CalendarToday, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f).clickable { showTimePicker = true }) {
+                    OutlinedTextField(
+                        value = hora,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.label_time)) },
+                        leadingIcon = { Icon(Icons.Filled.Schedule, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    )
+                }
             }
 
             Spacer(Modifier.height(12.dp))
 
+            // TOTAL CON SEPARADOR DE MILES FLUIDO
             OutlinedTextField(
-                value = total,
+                value = totalRaw,
                 onValueChange = { input ->
-                    total = Formatters.formatearMiles(input)
+                    // Solo aceptamos números (para evitar que el usuario borre el punto visual y cause líos)
+                    if (input.all { it.isDigit() }) {
+                        totalRaw = input
+                    }
                 },
                 label = { Text(stringResource(R.string.label_total)) },
                 supportingText = { Text(stringResource(R.string.label_total_hint)) },
                 leadingIcon = { Icon(Icons.Filled.AttachMoney, null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                visualTransformation = Formatters.ThousandsSeparatorTransformation(), // El punto es SOLO visual
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(16.dp))
 
-            // CARD DE CÁMARA (INTERACCIÓN CON DISPOSITIVO)
+            // CARD DE CÁMARA
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clickable { launchCamera() },
+                    .clickable { permissionLauncher.launch(Manifest.permission.CAMERA) },
                 colors = CardDefaults.cardColors(
                     containerColor = if (ticketUri != null) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.primaryContainer
                 ),
@@ -278,7 +376,7 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            val totalNumerico = Formatters.parsearMiles(total)
+            val totalNumerico = totalRaw.toDoubleOrNull()
             val formularioValido = supermercado.isNotBlank() && totalNumerico != null && totalNumerico > 0
 
             Button(

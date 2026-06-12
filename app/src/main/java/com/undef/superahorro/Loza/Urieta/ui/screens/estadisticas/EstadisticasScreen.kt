@@ -1,5 +1,7 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.estadisticas
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,13 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
+import com.undef.superahorro.Loza.Urieta.ui.util.ColorUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +90,7 @@ fun EstadisticasScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Error al cargar estadísticas: ${state.error}", color = MaterialTheme.colorScheme.error)
+                Text(text = "Error: ${state.error}", color = MaterialTheme.colorScheme.error)
             }
         } else {
             LazyColumn(
@@ -108,15 +117,29 @@ fun EstadisticasScreen(
 
                 item {
                     ChartCard(title = stringResource(R.string.stats_monthly_evolution)) {
-                        BarChart(data = state.gastoMensual)
+                        if (state.gastoMensual.isEmpty()) {
+                            Text("No hay datos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            // Usamos un color contrastante (Violeta/Indigo) para que resalte del verde
+                            ModernBarChart(data = state.gastoMensual)
+                        }
                     }
                 }
 
                 item {
                     ChartCard(title = stringResource(R.string.stats_by_supermarket)) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            state.gastoPorSupermercado.forEach { (sm, monto) ->
-                                ProgressRow(label = sm, valor = monto, max = totalGastado)
+                        if (state.gastoPorSupermercado.isEmpty()) {
+                            Text("No hay datos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                state.gastoPorSupermercado.forEach { (sm, monto) ->
+                                    ProgressRow(
+                                        label = sm, 
+                                        valor = monto, 
+                                        max = totalGastado,
+                                        accentColor = ColorUtils.getColorForName(sm)
+                                    )
+                                }
                             }
                         }
                     }
@@ -124,38 +147,36 @@ fun EstadisticasScreen(
 
                 item {
                     ChartCard(title = stringResource(R.string.stats_top_products)) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf(
-                                "Leche La Serenísima" to 8,
-                                "Pan Lactal Bimbo" to 6,
-                                "Yerba Taragüí" to 4,
-                                "Coca Cola 2.25L" to 4,
-                                "Aceite Natura" to 3
-                            ).forEachIndexed { idx, (nombre, cant) ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.primaryContainer),
-                                        contentAlignment = Alignment.Center
+                        if (state.productosMasComprados.isEmpty()) {
+                            Text("No hay productos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                state.productosMasComprados.forEachIndexed { idx, (nombre, cant) ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = (idx + 1).toString(),
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        Spacer(Modifier.size(12.dp))
+                                        Text(nombre, modifier = Modifier.weight(1f))
                                         Text(
-                                            text = "${idx + 1}",
-                                            fontWeight = FontWeight.Bold,
+                                            "${cant}x",
+                                            fontWeight = FontWeight.SemiBold,
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     }
-                                    Spacer(Modifier.size(12.dp))
-                                    Text(nombre, modifier = Modifier.weight(1f))
-                                    Text(
-                                        "${cant}x",
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
                                 }
                             }
                         }
@@ -198,23 +219,41 @@ private fun ChartCard(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun BarChart(data: List<Pair<String, Double>>) {
+private fun ModernBarChart(data: List<Pair<String, Double>>) {
     val maxValue = data.maxOfOrNull { it.second } ?: 1.0
-    val barColor = MaterialTheme.colorScheme.primary
+    
+    // Animación de entrada
+    var animationTriggered by remember { mutableStateOf(false) }
+    val progress by animateFloatAsState(
+        targetValue = if (animationTriggered) 1f else 0f,
+        animationSpec = tween(durationMillis = 1000)
+    )
+    
+    LaunchedEffect(Unit) {
+        animationTriggered = true
+    }
+
+    // Usamos un gradiente Indigo/Violeta para que resalte del verde de la app
+    val barBrush = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5C6BC0), Color(0xFF3949AB))
+    )
 
     Column {
-        Canvas(modifier = Modifier.fillMaxWidth().height(160.dp)) {
+        Canvas(modifier = Modifier.fillMaxWidth().height(180.dp)) {
             val barWidth = size.width / (data.size * 2f)
             data.forEachIndexed { i, (_, value) ->
-                val barHeight = (value / maxValue).toFloat() * size.height
+                val barHeight = ((value / maxValue).toFloat() * size.height) * progress
                 val x = (i * 2 + 1) * barWidth - barWidth / 2
-                drawRect(
-                    brush = SolidColor(barColor),
+                
+                drawRoundRect(
+                    brush = barBrush,
                     topLeft = Offset(x, size.height - barHeight),
-                    size = Size(barWidth, barHeight)
+                    size = Size(barWidth, barHeight),
+                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
                 )
             }
         }
+        Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             data.forEach { (label, _) ->
                 Text(text = label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -224,16 +263,16 @@ private fun BarChart(data: List<Pair<String, Double>>) {
 }
 
 @Composable
-private fun ProgressRow(label: String, valor: Double, max: Double) {
+private fun ProgressRow(label: String, valor: Double, max: Double, accentColor: Color) {
     val pct = if (max > 0) (valor / max).toFloat() else 0f
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label)
-            Text("$ %,.0f".format(valor), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            Text(label, fontSize = 14.sp)
+            Text("$ %,.0f".format(valor), fontWeight = FontWeight.Bold, color = accentColor)
         }
         Spacer(Modifier.height(4.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primaryContainer)) {
-            Box(modifier = Modifier.fillMaxWidth(pct).height(8.dp).background(MaterialTheme.colorScheme.primary))
+        Box(modifier = Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(accentColor.copy(alpha = 0.1f))) {
+            Box(modifier = Modifier.fillMaxWidth(pct).height(10.dp).background(accentColor))
         }
     }
 }

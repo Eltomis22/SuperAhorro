@@ -56,6 +56,9 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 fun MiPerfilScreen(
     navController: NavHostController,
     onLogout: () -> Unit,
+    onEditProfile: () -> Unit,
+    onChangePassword: () -> Unit,
+    onChangeEmail: () -> Unit,
     viewModel: MiPerfilViewModel = viewModel(factory = MiPerfilViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -132,14 +135,14 @@ fun MiPerfilScreen(
                             icon = Icons.Filled.Edit,
                             title = stringResource(R.string.profile_edit),
                             subtitle = stringResource(R.string.profile_edit_hint),
-                            onClick = { /* TODO */ }
+                            onClick = onEditProfile
                         )
                     }
                     item {
                         ProfileOptionRow(
                             icon = Icons.Filled.Lock,
                             title = stringResource(R.string.profile_change_password),
-                            onClick = { /* TODO */ }
+                            onClick = onChangePassword
                         )
                     }
                     item {
@@ -147,7 +150,7 @@ fun MiPerfilScreen(
                             icon = Icons.Filled.Email,
                             title = stringResource(R.string.profile_change_email),
                             subtitle = usuario?.email,
-                            onClick = { /* TODO */ }
+                            onClick = onChangeEmail
                         )
                     }
 

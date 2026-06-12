@@ -6,11 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
+import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
 
-@Database(entities = [Compra::class, Producto::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Compra::class, Producto::class, UserEntity::class], 
+    version = 2, // Subimos versión por la nueva tabla de usuarios
+    exportSchema = false
+)
 abstract class SuperAhorroDatabase : RoomDatabase() {
 
     abstract fun compraDao(): CompraDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -21,9 +27,9 @@ abstract class SuperAhorroDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SuperAhorroDatabase::class.java,
-                    "super_ahorro_database"
+                    "superahorro_database"
                 )
-                .fallbackToDestructiveMigration() // Útil durante el desarrollo
+                .fallbackToDestructiveMigration() // Borra datos viejos al cambiar versión
                 .build()
                 INSTANCE = instance
                 instance

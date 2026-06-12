@@ -1,6 +1,8 @@
 package com.undef.superahorro.Loza.Urieta.ui.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -67,10 +69,13 @@ fun SuperAhorroTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view)
-                .isAppearanceLightStatusBars = !darkTheme
+            val activity = findActivity(view.context)
+            if (activity != null) {
+                val window = activity.window
+                window.statusBarColor = colorScheme.primary.toArgb()
+                WindowCompat.getInsetsController(window, view)
+                    .isAppearanceLightStatusBars = !darkTheme
+            }
         }
     }
 
@@ -79,4 +84,16 @@ fun SuperAhorroTheme(
         typography = Typography,
         content = content
     )
+}
+
+/**
+ * Función de utilidad para encontrar el Activity desde cualquier contexto.
+ */
+private fun findActivity(context: Context): Activity? {
+    var currentContext = context
+    while (currentContext is ContextWrapper) {
+        if (currentContext is Activity) return currentContext
+        currentContext = currentContext.baseContext
+    }
+    return null
 }

@@ -4,5 +4,6 @@ data class EstadisticasUiState(
     val isLoading: Boolean = false,
     val gastoMensual: List<Pair<String, Double>> = emptyList(),
     val gastoPorSupermercado: List<Pair<String, Double>> = emptyList(),
+    val productosMasComprados: List<Pair<String, Int>> = emptyList(),
     val error: String? = null
 )

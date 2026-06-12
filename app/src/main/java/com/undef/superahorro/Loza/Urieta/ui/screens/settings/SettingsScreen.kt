@@ -30,19 +30,14 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
 
 /**
  * Pantalla de configuración de la app.
- * - Modo oscuro: cambia la paleta del theme inmediatamente.
- * - Idioma: re-aplica el Locale y stringResource() pasa a leer del XML correcto.
- * - Notificaciones / Biometría: por ahora solo guardan estado (placeholder).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavHostController) {
 
-    // Conectado al singleton global → cambios se reflejan en toda la app
     val darkMode = AppSettings.darkMode
     val notifications = AppSettings.notificationsEnabled
     val biometric = AppSettings.biometricEnabled
-    val idiomaIngles = AppSettings.useEnglish
 
     Scaffold(
         topBar = {
@@ -91,24 +86,6 @@ fun SettingsScreen(navController: NavHostController) {
                     subtitle = stringResource(R.string.settings_biometric_hint),
                     checked = biometric,
                     onCheckedChange = { AppSettings.biometricEnabled = it }
-                )
-            }
-
-            item {
-                Text(
-                    text = stringResource(R.string.settings_section_language),
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_lang_english),
-                    subtitle = stringResource(R.string.settings_lang_hint),
-                    checked = idiomaIngles,
-                    onCheckedChange = { AppSettings.useEnglish = it }
                 )
             }
 
