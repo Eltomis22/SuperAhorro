@@ -33,8 +33,25 @@ class NuevaCompraViewModel(
 
     private fun cargarSupermercados() {
         viewModelScope.launch {
+<<<<<<< HEAD
             val lista = repository.obtenerSupermercados()
             _uiState.update { it.copy(supermercados = lista) }
+=======
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val lista = repository.obtenerSupermercados()
+                _uiState.update { it.copy(isLoading = false, supermercados = lista) }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        error = "Error al cargar supermercados: ${e.message}",
+                        // Usamos datos locales como fallback si la API falla, pero informamos el error
+                        supermercados = listOf("Coto", "Carrefour", "Jumbo", "ChangoMás", "Día")
+                    )
+                }
+            }
+>>>>>>> master
         }
     }
 

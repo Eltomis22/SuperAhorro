@@ -32,6 +32,10 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+<<<<<<< HEAD
+=======
+import androidx.compose.material3.CircularProgressIndicator
+>>>>>>> master
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -44,6 +48,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+<<<<<<< HEAD
+=======
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+>>>>>>> master
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -89,6 +98,16 @@ fun NuevaCompraScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+<<<<<<< HEAD
+=======
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
+>>>>>>> master
 
     // --- LÓGICA DE CÁMARA ---
     var ticketUri by remember { mutableStateOf<Uri?>(null) }
@@ -216,6 +235,7 @@ fun NuevaCompraScreen(
                 ),
                 onBack = onBack
             )
+<<<<<<< HEAD
         }
     ) { padding ->
         Column(
@@ -225,6 +245,18 @@ fun NuevaCompraScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
+=======
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
+>>>>>>> master
 
             // SUPERMERCADO
             ExposedDropdownMenuBox(
@@ -405,5 +437,23 @@ fun NuevaCompraScreen(
                 )
             }
         }
+<<<<<<< HEAD
     }
 }
+=======
+
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+}
+}
+>>>>>>> master

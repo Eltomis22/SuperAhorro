@@ -75,6 +75,7 @@ dependencies {
     // Networking (Paso 9 - 2da Entrega)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
     implementation(libs.gson)
 
     // Testing

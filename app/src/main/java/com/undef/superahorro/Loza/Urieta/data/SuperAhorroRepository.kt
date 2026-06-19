@@ -61,11 +61,15 @@ class SuperAhorroRepository(
     // --- DROPDOWNS Y NETWORKING (GET) ---
 
     suspend fun obtenerSupermercados(): List<String> = withContext(Dispatchers.IO) {
+<<<<<<< HEAD
         try {
             api.obtenerSupermercados()
         } catch (e: Exception) {
             MockData.supermercados
         }
+=======
+        api.obtenerSupermercados()
+>>>>>>> master
     }
 
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
@@ -111,6 +115,7 @@ class SuperAhorroRepository(
     }
 
     private suspend fun sincronizarConServidor(compra: Compra) {
+<<<<<<< HEAD
         try {
             val response = api.sincronizarCompra(compra)
             if (response.isSuccessful) {
@@ -119,6 +124,13 @@ class SuperAhorroRepository(
         } catch (e: Exception) {
             Log.e("Repository", "Error de red al sincronizar: ${e.message}")
         }
+=======
+        val response = api.sincronizarCompra(compra)
+        if (!response.isSuccessful) {
+            throw Exception("Error de sincronización: ${response.code()} ${response.message()}")
+        }
+        Log.d("Repository", "Sincronización exitosa")
+>>>>>>> master
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
