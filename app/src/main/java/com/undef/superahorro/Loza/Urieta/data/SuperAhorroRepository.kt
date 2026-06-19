@@ -2,6 +2,7 @@ package com.undef.superahorro.Loza.Urieta.data
 
 import android.util.Log
 import com.undef.superahorro.Loza.Urieta.data.local.CompraDao
+import com.undef.superahorro.Loza.Urieta.data.local.ProductoDao
 import com.undef.superahorro.Loza.Urieta.data.local.UserDao
 import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
@@ -15,6 +16,7 @@ import kotlinx.coroutines.withContext
 
 class SuperAhorroRepository(
     private val compraDao: CompraDao,
+    private val productoDao: ProductoDao,
     private val userDao: UserDao,
     private val api: SuperAhorroApi
 ) {
@@ -84,7 +86,7 @@ class SuperAhorroRepository(
     }
 
     suspend fun obtenerProductosMasComprados(): List<Pair<String, Int>> = withContext(Dispatchers.IO) {
-        val productos = compraDao.obtenerTodosLosProductosSnapshot()
+        val productos = productoDao.obtenerTodosLosProductosSnapshot()
         if (productos.isEmpty()) return@withContext emptyList<Pair<String, Int>>()
 
         productos.groupBy { it.nombre }
@@ -119,10 +121,10 @@ class SuperAhorroRepository(
     }
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
-        compraDao.insertarProducto(producto.copy(compraId = compraId))
+        productoDao.insertarProducto(producto.copy(compraId = compraId))
     }
 
     suspend fun eliminarProducto(productoId: Int) = withContext(Dispatchers.IO) {
-        compraDao.eliminarProductoPorId(productoId)
+        productoDao.eliminarProductoPorId(productoId)
     }
 }

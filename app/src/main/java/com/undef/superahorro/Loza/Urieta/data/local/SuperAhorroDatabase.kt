@@ -16,6 +16,7 @@ import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
 abstract class SuperAhorroDatabase : RoomDatabase() {
 
     abstract fun compraDao(): CompraDao
+    abstract fun productoDao(): ProductoDao
     abstract fun userDao(): UserDao
 
     companion object {
