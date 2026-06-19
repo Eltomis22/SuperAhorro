@@ -33,10 +33,6 @@ class NuevaCompraViewModel(
 
     private fun cargarSupermercados() {
         viewModelScope.launch {
-<<<<<<< HEAD
-            val lista = repository.obtenerSupermercados()
-            _uiState.update { it.copy(supermercados = lista) }
-=======
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val lista = repository.obtenerSupermercados()
@@ -51,7 +47,6 @@ class NuevaCompraViewModel(
                     )
                 }
             }
->>>>>>> master
         }
     }
 

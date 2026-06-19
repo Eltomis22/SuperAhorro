@@ -21,19 +21,11 @@ interface SuperAhorroApi {
     /**
      * POST: Sincroniza una compra local con el servidor.
      */
-<<<<<<< HEAD
-    @POST("compras/sincronizar")
-    suspend fun sincronizarCompra(@Body compra: Compra): Response<ApiResponse>
-
-    companion object {
-        const val BASE_URL = "https://api.superahorro.com/"
-=======
     @POST("compras")
     suspend fun sincronizarCompra(@Body compra: Compra): Response<ApiResponse>
 
     companion object {
         const val BASE_URL = "https://66632f7a62966e20536deccb.mockapi.io/api/v1/"
->>>>>>> master
     }
 }
 

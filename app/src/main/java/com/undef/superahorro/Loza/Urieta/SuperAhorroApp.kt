@@ -4,11 +4,8 @@ import android.app.Application
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.local.SuperAhorroDatabase
 import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
-<<<<<<< HEAD
-=======
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
->>>>>>> master
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -18,11 +15,6 @@ class SuperAhorroApp : Application() {
         SuperAhorroDatabase.getDatabase(this)
     }
 
-<<<<<<< HEAD
-    private val retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://66632f7a62966e20536deccb.mockapi.io/api/v1/")
-=======
     private val okHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -36,7 +28,6 @@ class SuperAhorroApp : Application() {
         Retrofit.Builder()
             .baseUrl("https://66632f7a62966e20536deccb.mockapi.io/api/v1/")
             .client(okHttpClient)
->>>>>>> master
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
