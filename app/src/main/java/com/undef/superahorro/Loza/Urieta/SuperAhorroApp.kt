@@ -26,7 +26,7 @@ class SuperAhorroApp : Application() {
 
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://66632f7a62966e20536deccb.mockapi.io/api/v1/")
+            .baseUrl(SuperAhorroApi.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
