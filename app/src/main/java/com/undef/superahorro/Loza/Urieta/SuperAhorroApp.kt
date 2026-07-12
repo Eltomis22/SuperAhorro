@@ -26,7 +26,7 @@ class SuperAhorroApp : Application() {
 
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(SuperAhorroApi.BASE_URL)
+            .baseUrl(SuperAhorroApi.BASE_URL)//constante
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

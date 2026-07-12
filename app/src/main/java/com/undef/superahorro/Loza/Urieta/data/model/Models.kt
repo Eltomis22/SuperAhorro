@@ -92,3 +92,12 @@ data class CompraConProductos(
     )
     val productos: List<Producto>
 )
+
+/**
+ * Modelo para los mensajes del Chat con IA
+ */
+data class ChatMessage(
+    val text: String,
+    val isFromUser: Boolean,
+    val timestamp: Long = System.currentTimeMillis()
+)

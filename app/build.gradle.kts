@@ -78,6 +78,9 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
 
+    // IA (Paso Final - Chat)
+    implementation(libs.google.generativeai)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

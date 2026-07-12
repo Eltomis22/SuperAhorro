@@ -19,6 +19,7 @@ import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.MiPerfilScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.EditarPerfilScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.CambiarClaveScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.miperfil.CambiarEmailScreen
+import com.undef.superahorro.Loza.Urieta.ui.screens.chat.ChatScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.HistorialComprasScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevaCompraScreen
 import com.undef.superahorro.Loza.Urieta.ui.screens.purchases.NuevoProductoScreen
@@ -86,6 +87,10 @@ fun SuperAhorroNavGraph(
 
         composable(Screen.HistorialCompras.route) {
             HistorialComprasScreen(navController = navController)
+        }
+
+        composable(Screen.ChatIA.route) {
+            ChatScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Screen.Estadisticas.route) {

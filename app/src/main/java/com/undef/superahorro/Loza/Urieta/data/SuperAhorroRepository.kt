@@ -127,4 +127,21 @@ class SuperAhorroRepository(
     suspend fun eliminarProducto(productoId: Int) = withContext(Dispatchers.IO) {
         productoDao.eliminarProductoPorId(productoId)
     }
+
+    suspend fun obtenerResumenParaIA(): String = withContext(Dispatchers.IO) {
+        val compras = compraDao.obtenerTodasLasComprasSnapshot()
+        if (compras.isEmpty()) return@withContext "El usuario no tiene compras registradas aún."
+        
+        val totalGastado = compras.sumOf { it.total }
+        val superMasVisitado = compras.groupBy { it.supermercado }.maxByOrNull { it.value.size }?.key
+        
+        "Historial de compras: \n" +
+        "Total de compras: ${compras.size}\n" +
+        "Gasto total histórico: $${totalGastado}\n" +
+        "Supermercado más frecuente: ${superMasVisitado}\n" +
+        "Últimas 5 compras:\n" +
+        compras.take(5).joinToString("\n") { 
+            "- ${it.fecha}: ${it.supermercado} ($${it.total})" 
+        }
+    }
 }

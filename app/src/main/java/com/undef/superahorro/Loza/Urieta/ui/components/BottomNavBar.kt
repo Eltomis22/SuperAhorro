@@ -1,6 +1,7 @@
 package com.undef.superahorro.Loza.Urieta.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -31,6 +32,7 @@ private val bottomItems = listOf(
     BottomItem(Screen.Home.route, Icons.Filled.Home, R.string.bottom_home),
     BottomItem(Screen.ListadoCompras.route, Icons.Filled.ShoppingCart, R.string.bottom_compras),
     BottomItem(Screen.Estadisticas.route, Icons.Filled.BarChart, R.string.bottom_estadisticas),
+    BottomItem(Screen.ChatIA.route, Icons.Filled.AutoAwesome, R.string.bottom_chat),
     BottomItem(Screen.MiPerfil.route, Icons.Filled.Person, R.string.bottom_perfil)
 )
 

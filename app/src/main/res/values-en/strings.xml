@@ -41,6 +41,7 @@
     <string name="bottom_compras">Purchases</string>
     <string name="bottom_estadisticas">Stats</string>
     <string name="bottom_perfil">Profile</string>
+    <string name="bottom_chat">AI Chat</string>
 
     <string name="home_hello">Hi, %1$s 👋</string>
     <string name="home_subtitle">Your spending summary</string>

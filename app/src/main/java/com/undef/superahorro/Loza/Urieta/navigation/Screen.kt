@@ -22,6 +22,7 @@ sealed class Screen(val route: String) {
         fun createRoute(compraId: Int) = "detalle_compra/$compraId"
     }
     object HistorialCompras : Screen("historial_compras")
+    object ChatIA : Screen("chat_ia")
     object Estadisticas : Screen("estadisticas")
     object MiPerfil : Screen("mi_perfil")
     object Settings : Screen("settings")
