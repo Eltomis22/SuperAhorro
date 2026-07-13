@@ -1,5 +1,6 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -30,10 +31,10 @@ class ChatViewModel(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     // CONFIGURACIÓN DE GEMINI
-    // NOTA: En una app real, la API KEY no debe estar en el código.
+    // IMPORTANTE: La API KEY debe empezar con "AIza..." para ser válida.
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
-        apiKey = "TU_API_KEY_AQUI" // El usuario debe poner su clave aquí
+        apiKey = "AIza.Ab8RN6LQRJyglPQKLqoPWoYsyAW9qNEdCVdKd7rm_0v3R_JIMQ" 
     )
 
     fun sendMessage(userText: String) {
@@ -48,6 +49,11 @@ class ChatViewModel(
 
         viewModelScope.launch {
             try {
+                // Validación básica de formato para diagnóstico rápido
+                if (generativeModel.apiKey.startsWith("AQ.")) {
+                    throw Exception("API Key con formato inválido (empieza con AQ). Debe empezar con 'AIza'.")
+                }
+
                 // Obtenemos el contexto de las compras reales del usuario
                 val contextData = repository.obtenerResumenParaIA()
                 
@@ -65,10 +71,13 @@ class ChatViewModel(
                     isLoading = false
                 ) }
             } catch (e: Exception) {
+                val errorDetails = e.message ?: "Error desconocido"
+                Log.e("ChatViewModel", "Error en IA: $errorDetails")
+                
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage("Error de conexión con la IA. Verifica tu API Key.", false),
+                    messages = it.messages + ChatMessage("Error: $errorDetails", false),
                     isLoading = false,
-                    error = e.message
+                    error = errorDetails
                 ) }
             }
         }
