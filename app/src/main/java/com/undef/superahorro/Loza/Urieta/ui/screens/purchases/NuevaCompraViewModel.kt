@@ -15,8 +15,12 @@ import kotlinx.coroutines.launch
 data class NuevaCompraUiState(
     val isLoading: Boolean = false,
     val supermercados: List<String> = emptyList(),
+    val categorias: List<String> = listOf("Alimentos", "Limpieza", "Higiene", "Ocio", "Mascotas", "Salud", "Otros"),
+    val categoriaSeleccionada: String = "Alimentos",
     val compraCargada: Compra? = null,
     val guardadoExitoso: Int? = null,
+    val verificacionSegura: Boolean? = null,
+    val mensajeSeguridad: String? = null,
     val error: String? = null
 )
 
@@ -42,10 +46,31 @@ class NuevaCompraViewModel(
                     it.copy(
                         isLoading = false, 
                         error = "Error al cargar supermercados: ${e.message}",
-                        // Usamos datos locales como fallback si la API falla, pero informamos el error
                         supermercados = listOf("Coto", "Carrefour", "Jumbo", "ChangoMás", "Día")
                     )
                 }
+            }
+        }
+    }
+
+    fun seleccionarCategoria(categoria: String) {
+        _uiState.update { it.copy(categoriaSeleccionada = categoria) }
+    }
+
+    fun verificarGastoSeguro(monto: Double) {
+        if (monto <= 0) return
+        
+        _uiState.update { it.copy(isLoading = true, verificacionSegura = null, mensajeSeguridad = null) }
+        viewModelScope.launch {
+            try {
+                val response = repository.verificarPresupuestoSeguro(monto)
+                _uiState.update { it.copy(
+                    isLoading = false,
+                    verificacionSegura = response.seguro,
+                    mensajeSeguridad = response.mensaje
+                ) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Fallo la validación del Banquero: ${e.message}") }
             }
         }
     }

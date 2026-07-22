@@ -30,6 +30,12 @@ interface SuperAhorroApi {
     @POST("api/v1/chat")
     suspend fun enviarMensajeChat(@Body request: ChatRequest): ChatResponse
 
+    /**
+     * POST: Verifica si un gasto es seguro basándose en el presupuesto mensual (Algoritmo del Banquero).
+     */
+    @POST("api/v1/compras/verificar")
+    suspend fun verificarGastoSeguro(@Body request: VerificarGastoRequest): VerificarGastoResponse
+
     companion object {
         const val BASE_URL = "http://10.0.2.2:3000/"
     }
@@ -52,4 +58,16 @@ data class ChatRequest(
 
 data class ChatResponse(
     val respuesta: String
+)
+
+/**
+ * Modelos para la simulación de Gasto Seguro (Algoritmo del Banquero)
+ */
+data class VerificarGastoRequest(
+    val monto: Double
+)
+
+data class VerificarGastoResponse(
+    val seguro: Boolean,
+    val mensaje: String
 )
