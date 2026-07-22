@@ -38,10 +38,12 @@
     <string name="label_description">Descripción</string>
     <string name="label_quantity">Cantidad</string>
     <string name="label_price">Precio</string>
+    <string name="label_category">Categoría</string>
 
     <!-- Acciones -->
     <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="action_verify_secure">Verificar Gasto Seguro</string>
 
     <!-- Bottom bar -->
     <string name="bottom_home">Inicio</string>

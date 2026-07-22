@@ -17,7 +17,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SuperAhorro">
+        android:theme="@style/Theme.SuperAhorro"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"

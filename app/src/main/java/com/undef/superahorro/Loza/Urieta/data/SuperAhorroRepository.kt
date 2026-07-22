@@ -9,7 +9,11 @@ import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.User
 import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatResponse
 import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
+import com.undef.superahorro.Loza.Urieta.data.remote.VerificarGastoRequest
+import com.undef.superahorro.Loza.Urieta.data.remote.VerificarGastoResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext

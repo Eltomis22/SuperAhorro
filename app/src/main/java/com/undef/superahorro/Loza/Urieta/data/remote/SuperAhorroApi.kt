@@ -16,7 +16,7 @@ interface SuperAhorroApi {
     /**
      * GET: Obtiene la lista de supermercados sugeridos desde el servidor.
      */
-    @GET("supermercados")
+    @GET("api/v1/supermercados")
     suspend fun obtenerSupermercados(): List<String>
 
     /**

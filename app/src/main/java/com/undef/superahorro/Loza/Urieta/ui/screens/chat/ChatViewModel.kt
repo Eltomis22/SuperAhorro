@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.model.ChatMessage
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 
 data class ChatUiState(
     val messages: List<ChatMessage> = listOf(
-        ChatMessage("¡Hola! Soy tu asistente de SuperAhorro. ¿En qué puedo ayudarte con tus compras hoy?", false)
+        ChatMessage("¡Hola! Soy tu asistente de SuperAhorro conectado a mi propio servidor. ¿En qué puedo ayudarte hoy?", false)
     ),
     val isLoading: Boolean = false,
     val error: String? = null
@@ -44,7 +45,7 @@ class ChatViewModel(
                 val aiText = repository.consultarIA(userText)
                 
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage(aiText, false),
+                    messages = it.messages + ChatMessage(response.respuesta, false),
                     isLoading = false
                 ) }
             } catch (e: Exception) {
@@ -52,7 +53,7 @@ class ChatViewModel(
                 Log.e("ChatViewModel", "Error en Chat: $errorDetails")
                 
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage("Error: $errorDetails", false),
+                    messages = it.messages + ChatMessage("Error: No pude contactar con el asistente.", false),
                     isLoading = false,
                     error = errorDetails
                 ) }
