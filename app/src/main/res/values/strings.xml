@@ -38,10 +38,12 @@
     <string name="label_description">Descripción</string>
     <string name="label_quantity">Cantidad</string>
     <string name="label_price">Precio</string>
+    <string name="label_category">Categoría</string>
 
     <!-- Acciones -->
     <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="action_verify_secure">Verificar Gasto Seguro</string>
 
     <!-- Bottom bar -->
     <string name="bottom_home">Inicio</string>
@@ -154,5 +156,18 @@
     <!-- Detalle de compra (Intent compartir) -->
     <string name="share_purchase_text">Compra en %1$s el %2$s — Total: $%3$s</string>
     <string name="share_purchase_chooser">Compartir compra</string>
+
+    <!-- Categorías -->
+    <string name="cat_food">Alimentos</string>
+    <string name="cat_cleaning">Limpieza</string>
+    <string name="cat_hygiene">Higiene</string>
+    <string name="cat_leisure">Ocio</string>
+    <string name="cat_pets">Mascotas</string>
+    <string name="cat_health">Salud</string>
+    <string name="cat_others">Otros</string>
+
+    <!-- Algoritmo del Banquero -->
+    <string name="banker_calculating">Consultando al Banquero...</string>
+    <string name="banker_error">Fallo la validación del Banquero</string>
 
 </resources>

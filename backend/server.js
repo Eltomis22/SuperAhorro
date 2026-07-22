@@ -34,6 +34,21 @@ app.get('/api/v1/supermercados', async (req, res) =>{
     }
 });
 
+// NUEVO: Endpoint de verificación (Algoritmo del Banquero) sin guardar
+app.post('/api/v1/compras/verificar', async (req, res) => {
+    const { monto } = req.body;
+    try {
+        const seguro = await esEstadoSeguro(monto);
+        if (seguro) {
+            res.json({ seguro: true, mensaje: "Estado SEGURO: La compra está dentro de tu presupuesto mensual." });
+        } else {
+            res.json({ seguro: false, mensaje: "Estado INSEGURO: Esta compra excede tus recursos disponibles." });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
