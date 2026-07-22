@@ -41,14 +41,15 @@ data class Compra(
     val hora: String,             // formato HH:mm
     val supermercado: String,
     val total: Double,
+    val categoria: String = "Otros", // Nueva columna
     val ticketImagenUri: String? = null,
     
     @Ignore
-    val productos: List<Producto> = emptyList() // Temporal para compatibilidad con MockData
+    val productos: List<Producto> = emptyList()
 ) {
     // Constructor secundario para Room (ya que ignora 'productos')
-    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, ticketImagenUri: String?) : 
-        this(id, fecha, hora, supermercado, total, ticketImagenUri, emptyList())
+    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, categoria: String, ticketImagenUri: String?) : 
+        this(id, fecha, hora, supermercado, total, categoria, ticketImagenUri, emptyList())
 }
 
 /**
@@ -69,7 +70,7 @@ data class Compra(
 data class Producto(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val compraId: Int = 0, // Relación con la compra (default 0 para MockData temporal)
+    val compraId: Int = 0, // Relación con la compra
     val codigo: String,
     val nombre: String,
     val descripcion: String,

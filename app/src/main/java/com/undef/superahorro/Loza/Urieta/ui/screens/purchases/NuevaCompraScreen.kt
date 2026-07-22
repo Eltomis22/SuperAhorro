@@ -133,6 +133,7 @@ fun NuevaCompraScreen(
     var fecha by remember { mutableStateOf(LocalDate.now().toString()) }
     var hora by remember { mutableStateOf(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))) }
     var supermercado by remember { mutableStateOf("") }
+    var categoria by remember { mutableStateOf("Otros") }
     
     // Cambiamos 'total' para que guarde el texto crudo (sin puntos) mientras se escribe
     var totalRaw by remember { mutableStateOf("") }
@@ -163,10 +164,10 @@ fun NuevaCompraScreen(
                         fecha = selectedDate.toString()
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.action_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -181,10 +182,10 @@ fun NuevaCompraScreen(
                     val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                     hora = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
                     showTimePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.action_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         ) {
             Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -210,6 +211,7 @@ fun NuevaCompraScreen(
             fecha = compra.fecha
             hora = compra.hora
             supermercado = compra.supermercado
+            categoria = compra.categoria
             totalRaw = compra.total.toLong().toString()
             ticketUri = compra.ticketImagenUri?.let { Uri.parse(it) }
         }
@@ -282,6 +284,39 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // CATEGORÍA (Dropdown)
+            var catMenuExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = catMenuExpanded,
+                onExpandedChange = { catMenuExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = categoria,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.label_category)) },
+                    leadingIcon = { Icon(Icons.Filled.Store, null) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = catMenuExpanded) },
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = catMenuExpanded,
+                    onDismissRequest = { catMenuExpanded = false }
+                ) {
+                    state.categorias.forEach { cat ->
+                        DropdownMenuItem(
+                            text = { Text(cat) },
+                            onClick = {
+                                categoria = cat
+                                catMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             // FECHA Y HORA (CON PICKERS)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.weight(1f).clickable { showDatePicker = true }) {
@@ -340,6 +375,51 @@ fun NuevaCompraScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            val totalNumerico = totalRaw.toDoubleOrNull()
+            
+            // --- SIMULADOR DEL BANQUERO ---
+            if (totalNumerico != null && totalNumerico > 0) {
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.verificarGastoSeguro(categoria, totalNumerico) },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.action_verify_budget))
+                }
+
+                state.budgetStatus?.let { (safe, message) ->
+                    Card(
+                        modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (safe) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (safe) Icons.Filled.CheckCircle else Icons.Filled.AttachMoney,
+                                contentDescription = null,
+                                tint = if (safe) Color(0xFF2E7D32) else Color(0xFFC62828)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(
+                                text = message,
+                                fontSize = 13.sp,
+                                color = if (safe) Color(0xFF1B5E20) else Color(0xFFB71C1C),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // CARD DE CÁMARA
@@ -373,12 +453,12 @@ fun NuevaCompraScreen(
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = if (ticketUri != null) "¡Ticket capturado!" else stringResource(R.string.new_purchase_attach_ticket),
+                        text = if (ticketUri != null) stringResource(R.string.new_purchase_ticket_captured) else stringResource(R.string.new_purchase_attach_ticket),
                         fontWeight = FontWeight.Bold,
                         color = if (ticketUri != null) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = if (ticketUri != null) "Toca para cambiar la foto" else stringResource(R.string.new_purchase_attach_hint),
+                        text = if (ticketUri != null) stringResource(R.string.new_purchase_change_ticket) else stringResource(R.string.new_purchase_attach_hint),
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                         fontSize = 12.sp
                     )
@@ -387,7 +467,6 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            val totalNumerico = totalRaw.toDoubleOrNull()
             val formularioValido = supermercado.isNotBlank() && totalNumerico != null && totalNumerico > 0
 
             Button(
@@ -398,6 +477,7 @@ fun NuevaCompraScreen(
                         hora = hora,
                         supermercado = supermercado,
                         total = totalNumerico ?: 0.0,
+                        categoria = categoria,
                         ticketImagenUri = ticketUri?.toString()
                     )
                 },

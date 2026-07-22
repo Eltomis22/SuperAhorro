@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 data class NuevaCompraUiState(
     val isLoading: Boolean = false,
     val supermercados: List<String> = emptyList(),
+    val categorias: List<String> = listOf("Comida", "Servicios", "Ocio", "Otros"),
+    val budgetStatus: Pair<Boolean, String>? = null, // (esSeguro, mensaje)
     val compraCargada: Compra? = null,
     val guardadoExitoso: Int? = null,
     val error: String? = null
@@ -57,12 +59,21 @@ class NuevaCompraViewModel(
         }
     }
 
+    fun verificarGastoSeguro(categoria: String, monto: Double) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.verificarPresupuesto(categoria, monto)
+            _uiState.update { it.copy(isLoading = false, budgetStatus = result) }
+        }
+    }
+
     fun guardarCompra(
         id: Int?,
         fecha: String,
         hora: String,
         supermercado: String,
         total: Double,
+        categoria: String,
         ticketImagenUri: String? = null
     ) {
         _uiState.update { it.copy(isLoading = true) }
@@ -74,6 +85,7 @@ class NuevaCompraViewModel(
                     hora = hora,
                     supermercado = supermercado,
                     total = total,
+                    categoria = categoria,
                     ticketImagenUri = ticketImagenUri
                 )
 

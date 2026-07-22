@@ -128,20 +128,33 @@ class SuperAhorroRepository(
         productoDao.eliminarProductoPorId(productoId)
     }
 
-    suspend fun obtenerResumenParaIA(): String = withContext(Dispatchers.IO) {
-        val compras = compraDao.obtenerTodasLasComprasSnapshot()
-        if (compras.isEmpty()) return@withContext "El usuario no tiene compras registradas aún."
-        
-        val totalGastado = compras.sumOf { it.total }
-        val superMasVisitado = compras.groupBy { it.supermercado }.maxByOrNull { it.value.size }?.key
-        
-        "Historial de compras: \n" +
-        "Total de compras: ${compras.size}\n" +
-        "Gasto total histórico: $${totalGastado}\n" +
-        "Supermercado más frecuente: ${superMasVisitado}\n" +
-        "Últimas 5 compras:\n" +
-        compras.take(5).joinToString("\n") { 
-            "- ${it.fecha}: ${it.supermercado} ($${it.total})" 
+    // --- CHAT CON IA (Vía Backend) ---
+
+    suspend fun consultarIA(mensaje: String): String = withContext(Dispatchers.IO) {
+        try {
+            val response = api.enviarMensajeChat(com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest(mensaje))
+            response.response
+        } catch (e: Exception) {
+            "Error al consultar al servidor: ${e.message}"
+        }
+    }
+
+    // --- ALGORITMO DEL BANQUERO ---
+
+    suspend fun verificarPresupuesto(categoria: String, monto: Double): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.verificarGastoSeguro(
+                com.undef.superahorro.Loza.Urieta.data.remote.BudgetCheckRequest(
+                    categoria = categoria, 
+                    montoSolicitado = monto
+                )
+            )
+            Pair(response.safe, response.message)
+        } catch (e: Exception) {
+            // El texto ahora está en strings.xml, pero como el repositorio no tiene fácil acceso a context, 
+            // lo ideal es que el ViewModel maneje el texto o pasarle un default y que la UI lo traduzca.
+            // Para mantener consistencia con el resto del repo, dejamos el texto pero avisamos que es fallback.
+            Pair(true, "No se pudo verificar el presupuesto (Modo Offline).")
         }
     }
 }

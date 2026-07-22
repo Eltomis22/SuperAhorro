@@ -58,6 +58,13 @@ import com.undef.superahorro.Loza.Urieta.navigation.Screen
 import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
+import com.undef.superahorro.Loza.Urieta.ui.theme.ActionHistoryBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.ActionHistoryIcon
+import com.undef.superahorro.Loza.Urieta.ui.theme.ActionStatsBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.ActionStatsIcon
+import com.undef.superahorro.Loza.Urieta.ui.theme.InfoFavoriteBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.InfoSavingsBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.WarningAmber
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,16 +123,16 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Filled.History,
                                 label = stringResource(R.string.home_history),
-                                color = Color(0xFFE0F2F1),
-                                iconColor = Color(0xFF00796B),
+                                color = ActionHistoryBg,
+                                iconColor = ActionHistoryIcon,
                                 onClick = { navController.navigate(Screen.HistorialCompras.route) }
                             )
                             ModernActionCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Filled.BarChart,
                                 label = stringResource(R.string.home_stats),
-                                color = Color(0xFFF3E5F5),
-                                iconColor = Color(0xFF7B1FA2),
+                                color = ActionStatsBg,
+                                iconColor = ActionStatsIcon,
                                 onClick = { navController.navigate(Screen.Estadisticas.route) }
                             )
                         }
@@ -136,17 +143,17 @@ fun HomeScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoMiniCard(
                                 modifier = Modifier.weight(1f),
-                                title = "Favorito",
+                                title = stringResource(R.string.home_label_favorite),
                                 value = state.superMasVisitado,
                                 icon = Icons.Filled.Storefront,
-                                color = Color(0xFFFFF3E0)
+                                color = InfoFavoriteBg
                             )
                             InfoMiniCard(
                                 modifier = Modifier.weight(1f),
-                                title = "Ahorro",
+                                title = stringResource(R.string.home_label_savings),
                                 value = Formatters.formatearMoneda(state.ahorroEstimado),
                                 icon = Icons.AutoMirrored.Filled.TrendingUp,
-                                color = Color(0xFFE8F5E9)
+                                color = InfoSavingsBg
                             )
                         }
                     }
@@ -170,7 +177,7 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "Ver todo",
+                                text = stringResource(R.string.home_ver_todo),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary,
@@ -297,10 +304,10 @@ private fun TipCard() {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Filled.Lightbulb, null, tint = Color(0xFFFBC02D))
+            Icon(Icons.Filled.Lightbulb, null, tint = WarningAmber)
             Spacer(Modifier.size(12.dp))
             Text(
-                "Tip: ¡Comparar precios antes de comprar puede ahorrarte hasta un 20%!",
+                text = stringResource(R.string.home_tip_text),
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -357,7 +364,7 @@ private fun EmptyRecentState() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Todavía no cargaste compras.",
+            text = stringResource(R.string.home_no_purchases),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp
         )

@@ -25,3 +25,11 @@ val WarningAmber = Color(0xFFFBC02D)
 val ChartColor1 = Color(0xFF00796B)
 val ChartColor2 = Color(0xFF4DB6AC)
 val ChartColor3 = Color(0xFF80CBC4)
+
+// Colores Semánticos para Home
+val ActionHistoryBg = Color(0xFFE0F2F1)
+val ActionHistoryIcon = Color(0xFF00796B)
+val ActionStatsBg = Color(0xFFF3E5F5)
+val ActionStatsIcon = Color(0xFF7B1FA2)
+val InfoFavoriteBg = Color(0xFFFFF3E0)
+val InfoSavingsBg = Color(0xFFE8F5E9)

@@ -140,4 +140,19 @@
     <string name="share_purchase_text">Purchase at %1$s on %2$s — Total: $%3$s</string>
     <string name="share_purchase_chooser">Share purchase</string>
 
+    <!-- Home Extras -->
+    <string name="home_label_favorite">Favorite</string>
+    <string name="home_label_savings">Savings</string>
+    <string name="home_tip_text">Tip: Comparing prices before buying can save you up to 20%!</string>
+    <string name="home_ver_todo">See all</string>
+    <string name="home_no_purchases">No purchases uploaded yet.</string>
+
+    <!-- Banker and Extras -->
+    <string name="label_category">Expense category</string>
+    <string name="action_ok">OK</string>
+    <string name="action_verify_budget">Verify if spending is safe 🏦</string>
+    <string name="new_purchase_ticket_captured">Receipt captured!</string>
+    <string name="new_purchase_change_ticket">Tap to change photo</string>
+    <string name="error_budget_offline">Could not verify budget (Offline mode).</string>
+
 </resources>

@@ -155,4 +155,19 @@
     <string name="share_purchase_text">Compra en %1$s el %2$s — Total: $%3$s</string>
     <string name="share_purchase_chooser">Compartir compra</string>
 
+    <!-- Home Extras -->
+    <string name="home_label_favorite">Favorito</string>
+    <string name="home_label_savings">Ahorro</string>
+    <string name="home_tip_text">Tip: ¡Comparar precios antes de comprar puede ahorrarte hasta un 20%!</string>
+    <string name="home_ver_todo">Ver todo</string>
+    <string name="home_no_purchases">Todavía no cargaste compras.</string>
+
+    <!-- Banquero y Extras -->
+    <string name="label_category">Categoría del gasto</string>
+    <string name="action_ok">OK</string>
+    <string name="action_verify_budget">Verificar si el gasto es seguro 🏦</string>
+    <string name="new_purchase_ticket_captured">¡Ticket capturado!</string>
+    <string name="new_purchase_change_ticket">Toca para cambiar la foto</string>
+    <string name="error_budget_offline">No se pudo verificar el presupuesto (Modo Offline).</string>
+
 </resources>
