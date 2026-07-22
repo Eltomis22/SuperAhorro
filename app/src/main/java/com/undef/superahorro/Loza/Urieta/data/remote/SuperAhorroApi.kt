@@ -24,6 +24,12 @@ interface SuperAhorroApi {
     @POST("compras")
     suspend fun sincronizarCompra(@Body compra: Compra): Response<ApiResponse>
 
+    /**
+     * POST: Envía un mensaje al servicio de Chat con IA en el servidor.
+     */
+    @POST("api/v1/chat")
+    suspend fun enviarMensajeChat(@Body request: ChatRequest): ChatResponse
+
     companion object {
         const val BASE_URL = "http://10.0.2.2:3000/"
     }
@@ -35,4 +41,15 @@ interface SuperAhorroApi {
 data class ApiResponse(
     val success: Boolean,
     val message: String? = null
+)
+
+/**
+ * Modelos para el Chat con IA (Delegado al backend)
+ */
+data class ChatRequest(
+    val mensaje: String
+)
+
+data class ChatResponse(
+    val respuesta: String
 )

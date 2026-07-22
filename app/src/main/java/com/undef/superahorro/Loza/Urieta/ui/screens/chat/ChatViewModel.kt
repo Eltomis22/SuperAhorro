@@ -5,10 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.model.ChatMessage
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +16,7 @@ import kotlinx.coroutines.launch
 
 data class ChatUiState(
     val messages: List<ChatMessage> = listOf(
-        ChatMessage("¡Hola! Soy tu asistente de SuperAhorro. ¿En qué puedo ayudarte con tus compras hoy?", false)
+        ChatMessage("¡Hola! Soy tu asistente de SuperAhorro conectado a mi propio servidor. ¿En qué puedo ayudarte hoy?", false)
     ),
     val isLoading: Boolean = false,
     val error: String? = null
@@ -29,13 +28,6 @@ class ChatViewModel(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
-
-    // CONFIGURACIÓN DE GEMINI
-    // IMPORTANTE: La API KEY debe empezar con "AIza..." para ser válida.
-    private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = "AIza.Ab8RN6LQRJyglPQKLqoPWoYsyAW9qNEdCVdKd7rm_0v3R_JIMQ" 
-    )
 
     fun sendMessage(userText: String) {
         if (userText.isBlank()) return
@@ -49,33 +41,19 @@ class ChatViewModel(
 
         viewModelScope.launch {
             try {
-                // Validación básica de formato para diagnóstico rápido
-                if (generativeModel.apiKey.startsWith("AQ.")) {
-                    throw Exception("API Key con formato inválido (empieza con AQ). Debe empezar con 'AIza'.")
-                }
-
-                // Obtenemos el contexto de las compras reales del usuario
-                val contextData = repository.obtenerResumenParaIA()
-                
-                val prompt = content {
-                    text("Eres un asistente experto en ahorro y finanzas personales para la app 'SuperAhorro'.")
-                    text("Aquí están los datos de compras reales del usuario: $contextData")
-                    text("Responde de forma breve y amigable a la siguiente consulta del usuario: $userText")
-                }
-
-                val response = generativeModel.generateContent(prompt)
-                val aiText = response.text ?: "Lo siento, no pude procesar esa consulta."
+                // Llamamos a nuestro propio backend en lugar de usar el SDK de Google directo
+                val response = repository.enviarMensajeAI(ChatRequest(userText))
                 
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage(aiText, false),
+                    messages = it.messages + ChatMessage(response.respuesta, false),
                     isLoading = false
                 ) }
             } catch (e: Exception) {
-                val errorDetails = e.message ?: "Error desconocido"
-                Log.e("ChatViewModel", "Error en IA: $errorDetails")
+                val errorDetails = e.message ?: "Error al conectar con el servidor"
+                Log.e("ChatViewModel", "Error en Chat: $errorDetails")
                 
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage("Error: $errorDetails", false),
+                    messages = it.messages + ChatMessage("Error: No pude contactar con el asistente.", false),
                     isLoading = false,
                     error = errorDetails
                 ) }

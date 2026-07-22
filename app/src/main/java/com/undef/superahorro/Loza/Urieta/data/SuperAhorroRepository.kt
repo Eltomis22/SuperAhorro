@@ -9,6 +9,8 @@ import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.User
 import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest
+import com.undef.superahorro.Loza.Urieta.data.remote.ChatResponse
 import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -126,6 +128,12 @@ class SuperAhorroRepository(
 
     suspend fun eliminarProducto(productoId: Int) = withContext(Dispatchers.IO) {
         productoDao.eliminarProductoPorId(productoId)
+    }
+
+    // --- CHAT CON IA (PROXY) ---
+
+    suspend fun enviarMensajeAI(request: ChatRequest): ChatResponse = withContext(Dispatchers.IO) {
+        api.enviarMensajeChat(request)
     }
 
     suspend fun obtenerResumenParaIA(): String = withContext(Dispatchers.IO) {
