@@ -15,7 +15,7 @@ interface SuperAhorroApi {
     /**
      * GET: Obtiene la lista de supermercados sugeridos desde el servidor.
      */
-    @GET("supermercados")
+    @GET("api/v1/supermercados")
     suspend fun obtenerSupermercados(): List<String>
 
     /**
@@ -25,7 +25,7 @@ interface SuperAhorroApi {
     suspend fun sincronizarCompra(@Body compra: Compra): Response<ApiResponse>
 
     companion object {
-        const val BASE_URL = "https://66632f7a62966e20536deccb.mockapi.io/api/v1/"
+        const val BASE_URL = "http://10.0.2.2:3000/"
     }
 }
 
