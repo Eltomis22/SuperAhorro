@@ -1,15 +1,5 @@
-- [x] Crear directorio `backend/`
-- [x] Crear `package.json` con dependencias
-- [x] Crear `server.js` con lógica de Express y Supabase
-- [x] Implementar "auto-aprendizaje" de supermercados en el backend
-- [x] Migrar Chat IA al Backend (Node.js + Gemini)
-- [x] Implementar Algoritmo del Banquero en el Backend
-- [x] Corregir bug de sincronización de categoría en el Backend
-- [x] Eliminar código muerto (`MockData.kt`, funciones obsoletas)
-- [x] Deshardcodear colores y strings en `HomeScreen.kt` para internacionalización
-- [x] Crear `.env.example`
-- [x] Proporcionar script SQL para Supabase (Actualizado con `presupuestos`)
-- [x] Actualizar Android App: Modelos, API y Repository
-- [x] Actualizar Android App: UI de Nueva Compra con selector de categoría
-- [x] Actualizar Android App: Integrar Simulador de Gasto Seguro (Banquero)
-- [x] Verificar configuración de `AndroidManifest.xml`
+- [x] Consolidar cambios del repositorio Android (Merge con preferencia local)
+- [x] Restaurar funcionalidad completa en el Backend (IA, Banquero, Sincronización)
+- [x] Eliminar carpeta `backend/` duplicada en el proyecto Android
+- [x] Limpiar redundancias e inconsistencias post-merge en Android (ViewModels, Repository, Strings)
+- [x] Verificar configuración de red y permisos finales

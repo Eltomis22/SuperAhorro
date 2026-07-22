@@ -19,8 +19,6 @@ data class NuevaCompraUiState(
     val budgetStatus: Pair<Boolean, String>? = null, // (esSeguro, mensaje)
     val compraCargada: Compra? = null,
     val guardadoExitoso: Int? = null,
-    val verificacionSegura: Boolean? = null,
-    val mensajeSeguridad: String? = null,
     val error: String? = null
 )
 
@@ -49,28 +47,6 @@ class NuevaCompraViewModel(
                         supermercados = listOf("Coto", "Carrefour", "Jumbo", "ChangoMás", "Día")
                     )
                 }
-            }
-        }
-    }
-
-    fun seleccionarCategoria(categoria: String) {
-        _uiState.update { it.copy(categoriaSeleccionada = categoria) }
-    }
-
-    fun verificarGastoSeguro(monto: Double) {
-        if (monto <= 0) return
-        
-        _uiState.update { it.copy(isLoading = true, verificacionSegura = null, mensajeSeguridad = null) }
-        viewModelScope.launch {
-            try {
-                val response = repository.verificarPresupuestoSeguro(monto)
-                _uiState.update { it.copy(
-                    isLoading = false,
-                    verificacionSegura = response.seguro,
-                    mensajeSeguridad = response.mensaje
-                ) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Fallo la validación del Banquero: ${e.message}") }
             }
         }
     }

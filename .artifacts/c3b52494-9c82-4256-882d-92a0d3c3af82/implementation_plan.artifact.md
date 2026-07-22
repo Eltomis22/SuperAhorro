@@ -1,48 +1,36 @@
-# Plan de Implementación - Simulador de Gasto Seguro (Algoritmo del Banquero)
+# Plan de Consolidación - Android & Backend (Revisión de Compañero)
 
-Este plan describe la integración del **Algoritmo del Banquero** como una funcionalidad de "Seguridad Financiera". La app permitirá al usuario simular si un gasto planeado es "seguro" basándose en su presupuesto mensual y sus necesidades futuras estimadas.
+Este plan detalla el proceso para fusionar los cambios subidos por tu compañero, analizando su calidad y asegurando que la versión final sea la más completa y funcional (incluyendo IA, Algoritmo del Banquero y Sincronización Total).
 
 ## User Review Required
 
-> [!IMPORTANT]
-> **Cambio en el Modelo de Datos:** Para que el algoritmo funcione, necesitamos clasificar los gastos. Propongo añadir un campo `categoria` a la tabla `compras` (ej: Comida, Servicios, Ocio).
->
-> **Concepto de "Seguridad":** El algoritmo no solo verifica si tienes dinero *hoy*, sino si gastar eso hoy te impedirá cubrir el presupuesto máximo de otras categorías esenciales en el futuro (evasión de "deadlock" financiero).
+> [!CAUTION]
+> **Calidad del Código del Compañero:** Tras analizar los repositorios, he detectado que la versión subida por tu compañero es **incompleta** en comparación con la que construimos:
+> 1. **Backend:** Su `server.js` solo tiene 1 endpoint (supermercados), faltándole toda la lógica de sincronización de compras, IA y el Algoritmo del Banquero.
+> 2. **Android:** La interfaz de la API tiene nombres de campos en español que no coinciden con las mejores prácticas y carece de parámetros esenciales para el algoritmo de seguridad.
+> 3. **Hardcoding:** Ha dejado credenciales de Supabase hardcodeadas en el código del servidor.
+
+**Decisión Propuesta:** Mantener los commits de tu compañero en el historial (para que sume puntos), pero realizar una **"Consolidación Final"** que sobreescriba los archivos con nuestra versión optimizada y completa.
 
 ## Proposed Changes
 
-### [Component Name] Backend (Node.js)
+### 1. Repositorio Android (Merge & Fix)
+- Realizar un `merge` de la rama del compañero.
+- Resolver conflictos priorizando **nuestra versión** (que incluye `@SerializedName`, categorías y validaciones completas).
+- Crear un commit final de "Consolidación de Arquitectura".
 
-#### [MODIFY] [database.sql](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/backend/database.sql)
-- Añadir tabla `presupuestos` (categoria, monto_maximo).
-- Añadir columna `categoria` a la tabla `compras`.
-
-#### [MODIFY] [server.js](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/backend/server.js)
-- Implementar la función `isSafeState(available, max, allocation)`.
-- Crear endpoint `POST /api/v1/budget/check`:
-    - Recibe: `{ categoria, monto_solicitado }`.
-    - Calcula el estado actual consultando Supabase.
-    - Devuelve: `{ safe: boolean, message: string }`.
-
-### [Component Name] Android App
-
-#### [MODIFY] [Models.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/model/Models.kt)
-- Añadir campo `categoria: String` a la entidad `Compra`.
-
-#### [MODIFY] [SuperAhorroApi.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/remote/SuperAhorroApi.kt)
-- Definir `BudgetCheckRequest` y `BudgetCheckResponse`.
-- Añadir el endpoint `checkBudget`.
-
-#### [MODIFY] [NuevaCompraScreen.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/purchases/NuevaCompraScreen.kt)
-- Añadir un selector de categoría.
-- Añadir un botón o aviso de "Verificar Gasto Seguro" que consulte al backend antes de guardar.
+### 2. Repositorio Backend (Restore functionality)
+- Restaurar el archivo `server.js` completo (con IA, Banquero, CORS y variables de entorno).
+- Restaurar el `package.json` con todas las dependencias.
+- Mantener su repositorio de GitHub pero con el código funcional.
 
 ## Verification Plan
 
 ### Automated Tests
-- Script de prueba en Node.js para validar que el algoritmo detecta estados inseguros (ej: cuando pides más dinero del que queda disponible para cubrir el mínimo de otras categorías).
+- Verificar que el servidor inicie correctamente con `npm start`.
+- Probar los endpoints `GET /supermercados`, `POST /compras`, `POST /chat` y `POST /budget/check`.
 
 ### Manual Verification
-1. Definir presupuestos máximos en Supabase (ej: Comida: 1000, Ocio: 500).
-2. Simular un gasto de 400 en Ocio cuando solo quedan 1200 totales. El algoritmo debe validar si los 800 restantes cubren el máximo de Comida.
-3. Verificar que la app muestre una alerta roja si el estado es "Inseguro".
+1. Abrir la app Android.
+2. Probar el flujo completo: Nueva Compra -> Sincronizar -> Chat IA -> Verificar Gasto Seguro.
+3. Confirmar que los datos aparecen en Supabase.

@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.undef.superahorro.Loza.Urieta.data.SuperAhorroRepository
 import com.undef.superahorro.Loza.Urieta.data.model.ChatMessage
-import com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,7 +44,7 @@ class ChatViewModel(
                 val aiText = repository.consultarIA(userText)
                 
                 _uiState.update { it.copy(
-                    messages = it.messages + ChatMessage(response.respuesta, false),
+                    messages = it.messages + ChatMessage(aiText, false),
                     isLoading = false
                 ) }
             } catch (e: Exception) {
