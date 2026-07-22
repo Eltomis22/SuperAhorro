@@ -21,6 +21,10 @@ val TextOnPrimary = Color(0xFFFFFFFF)
 val ErrorRed = Color(0xFFBA1A1A)
 val WarningAmber = Color(0xFFFBC02D)
 
+// Colores del Algoritmo del Banquero
+val BankerSafe = Color(0xFF2E7D32)    // Verde bosque para éxito
+val BankerUnsafe = Color(0xFFC62828)  // Rojo oscuro para alerta
+
 // Colores para Gráficos
 val ChartColor1 = Color(0xFF00796B)
 val ChartColor2 = Color(0xFF4DB6AC)
