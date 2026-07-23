@@ -31,9 +31,8 @@ class ChatViewModel(
     fun sendMessage(userText: String) {
         if (userText.isBlank()) return
 
-        val userMessage = ChatMessage(userText, true)
         _uiState.update { it.copy(
-            messages = it.messages + userMessage,
+            messages = it.messages + ChatMessage(userText, true),
             isLoading = true,
             error = null
         ) }

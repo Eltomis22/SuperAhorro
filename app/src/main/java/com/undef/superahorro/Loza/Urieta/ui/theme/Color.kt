@@ -21,14 +21,25 @@ val TextOnPrimary = Color(0xFFFFFFFF)
 val ErrorRed = Color(0xFFBA1A1A)
 val WarningAmber = Color(0xFFFBC02D)
 
-// Colores del Algoritmo del Banquero
-val BankerSafe = Color(0xFF2E7D32)    // Verde bosque para éxito
-val BankerUnsafe = Color(0xFFC62828)  // Rojo oscuro para alerta
+// Colores del Algoritmo del Banquero y Estados
+val BankerSafe = Color(0xFF2E7D32)
+val BankerUnsafe = Color(0xFFC62828)
+val BankerSafeBg = Color(0xFFE8F5E9)
+val BankerUnsafeBg = Color(0xFFFFEBEE)
+val BankerSafeText = Color(0xFF1B5E20)
+val BankerUnsafeText = Color(0xFFB71C1C)
+
+// Colores de Ticket
+val TicketCapturedBg = Color(0xFFE8F5E9)
+val TicketCapturedIcon = Color(0xFF4CAF50)
+val TicketCapturedText = Color(0xFF2E7D32)
 
 // Colores para Gráficos
 val ChartColor1 = Color(0xFF00796B)
 val ChartColor2 = Color(0xFF4DB6AC)
 val ChartColor3 = Color(0xFF80CBC4)
+val ChartBarGradientStart = Color(0xFF5C6BC0)
+val ChartBarGradientEnd = Color(0xFF3949AB)
 
 // Colores Semánticos para Home
 val ActionHistoryBg = Color(0xFFE0F2F1)

@@ -49,6 +49,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
+import com.undef.superahorro.Loza.Urieta.ui.theme.ChartBarGradientEnd
+import com.undef.superahorro.Loza.Urieta.ui.theme.ChartBarGradientStart
 import com.undef.superahorro.Loza.Urieta.ui.util.ColorUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,7 +237,7 @@ private fun ModernBarChart(data: List<Pair<String, Double>>) {
 
     // Usamos un gradiente Indigo/Violeta para que resalte del verde de la app
     val barBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF5C6BC0), Color(0xFF3949AB))
+        colors = listOf(ChartBarGradientStart, ChartBarGradientEnd)
     )
 
     Column {

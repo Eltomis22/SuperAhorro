@@ -73,6 +73,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerSafe
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerSafeBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerSafeText
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerUnsafe
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerUnsafeBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.BankerUnsafeText
+import com.undef.superahorro.Loza.Urieta.ui.theme.TicketCapturedBg
+import com.undef.superahorro.Loza.Urieta.ui.theme.TicketCapturedIcon
+import com.undef.superahorro.Loza.Urieta.ui.theme.TicketCapturedText
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 import java.io.File
 import java.time.Instant
@@ -396,7 +405,7 @@ fun NuevaCompraScreen(
                     Card(
                         modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (safe) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                            containerColor = if (safe) BankerSafeBg else BankerUnsafeBg
                         )
                     ) {
                         Row(
@@ -406,13 +415,13 @@ fun NuevaCompraScreen(
                             Icon(
                                 imageVector = if (safe) Icons.Filled.CheckCircle else Icons.Filled.AttachMoney,
                                 contentDescription = null,
-                                tint = if (safe) Color(0xFF2E7D32) else Color(0xFFC62828)
+                                tint = if (safe) BankerSafe else BankerUnsafe
                             )
                             Spacer(Modifier.size(8.dp))
                             Text(
                                 text = message,
                                 fontSize = 13.sp,
-                                color = if (safe) Color(0xFF1B5E20) else Color(0xFFB71C1C),
+                                color = if (safe) BankerSafeText else BankerUnsafeText,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -429,7 +438,7 @@ fun NuevaCompraScreen(
                     .height(160.dp)
                     .clickable { permissionLauncher.launch(Manifest.permission.CAMERA) },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (ticketUri != null) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (ticketUri != null) TicketCapturedBg else MaterialTheme.colorScheme.primaryContainer
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -442,7 +451,7 @@ fun NuevaCompraScreen(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(28.dp))
-                            .background(if (ticketUri != null) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary),
+                            .background(if (ticketUri != null) TicketCapturedIcon else MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -455,7 +464,7 @@ fun NuevaCompraScreen(
                     Text(
                         text = if (ticketUri != null) stringResource(R.string.new_purchase_ticket_captured) else stringResource(R.string.new_purchase_attach_ticket),
                         fontWeight = FontWeight.Bold,
-                        color = if (ticketUri != null) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onPrimaryContainer
+                        color = if (ticketUri != null) TicketCapturedText else MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = if (ticketUri != null) stringResource(R.string.new_purchase_change_ticket) else stringResource(R.string.new_purchase_attach_hint),

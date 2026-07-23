@@ -150,10 +150,6 @@ class SuperAhorroRepository(
         productoDao.insertarProducto(producto.copy(compraId = compraId))
     }
 
-    suspend fun eliminarProducto(productoId: Int) = withContext(Dispatchers.IO) {
-        productoDao.eliminarProductoPorId(productoId)
-    }
-
     // --- CHAT CON IA (Vía Backend) ---
 
     suspend fun consultarIA(mensaje: String): String = withContext(Dispatchers.IO) {
