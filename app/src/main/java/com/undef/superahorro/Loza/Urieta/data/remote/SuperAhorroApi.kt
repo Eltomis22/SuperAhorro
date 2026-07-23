@@ -45,6 +45,18 @@ interface SuperAhorroApi {
     @POST("budget/check")
     suspend fun verificarGastoSeguro(@Body request: BudgetCheckRequest): BudgetCheckResponse
 
+    /**
+     * POST: Registrar usuario en la nube.
+     */
+    @POST("usuarios/registrar")
+    suspend fun registrarUsuarioCloud(@Body request: AuthRequest): Response<ApiResponse>
+
+    /**
+     * POST: Login de usuario en la nube.
+     */
+    @POST("usuarios/login")
+    suspend fun loginUsuarioCloud(@Body request: AuthRequest): Response<AuthResponse>
+
     companion object {
         // LOCAL: Usa esta URL para probar con el servidor corriendo en tu PC (Node.js)
         // const val BASE_URL = "http://10.0.2.2:3000/api/v1/"
@@ -81,10 +93,33 @@ data class BudgetCheckRequest(
     @SerializedName("monto_solicitado")
     val montoSolicitado: Double,
     @SerializedName("presupuesto_total")
-    val presupuestoTotal: Double? = null
+    val presupuestoTotal: Double? = null,
+    @SerializedName("usuario_email")
+    val usuarioEmail: String
 )
 
 data class BudgetCheckResponse(
     val safe: Boolean,
     val message: String
+)
+
+/**
+ * Modelos para Autenticación Cloud
+ */
+data class AuthRequest(
+    val email: String,
+    val clave: String,
+    val nombre: String? = null
+)
+
+data class AuthResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val user: User? = null
+)
+
+/** Usuario para AuthResponse */
+data class User(
+    val nombre: String,
+    val email: String
 )

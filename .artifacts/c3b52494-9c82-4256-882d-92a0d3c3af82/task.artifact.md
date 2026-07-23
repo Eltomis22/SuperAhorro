@@ -2,4 +2,6 @@
 - [x] Restaurar funcionalidad completa en el Backend (IA, Banquero, Sincronización)
 - [x] Eliminar carpeta `backend/` duplicada en el proyecto Android
 - [x] Limpiar redundancias e inconsistencias post-merge en Android (ViewModels, Repository, Strings)
+- [x] Implementar Sincronización de Usuarios y Multiusuario (Cloud Auth)
+- [x] Actualizar esquemas de base de datos en Supabase (Usuarios y vínculo con Compras)
 - [x] Verificar configuración de red y permisos finales

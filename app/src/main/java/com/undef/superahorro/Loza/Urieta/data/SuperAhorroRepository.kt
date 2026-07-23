@@ -12,6 +12,7 @@ import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
 import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
@@ -20,23 +21,46 @@ class SuperAhorroRepository(
     private val compraDao: CompraDao,
     private val productoDao: ProductoDao,
     private val userDao: UserDao,
-    private val api: SuperAhorroApi
+    private val api: SuperAhorroApi,
+    private val settingsRepository: com.undef.superahorro.Loza.Urieta.data.SettingsRepository
 ) {
 
     // --- SESIÓN Y USUARIOS ---
 
     suspend fun registrarUsuario(nombre: String, email: String, clave: String) = withContext(Dispatchers.IO) {
+        // 1. Local
         val entity = UserEntity(nombre = nombre, email = email, clave = clave)
         userDao.insertarUsuario(entity)
+        
+        // 2. Cloud
+        try {
+            api.registrarUsuarioCloud(com.undef.superahorro.Loza.Urieta.data.remote.AuthRequest(email, clave, nombre))
+        } catch (e: Exception) {
+            Log.e("Repository", "Error al registrar en la nube: ${e.message}")
+        }
     }
 
     suspend fun validarCredenciales(email: String, clave: String): User? = withContext(Dispatchers.IO) {
+        // 1. Intentamos Local primero para rapidez
         val entity = userDao.obtenerUsuarioPorEmail(email)
         if (entity != null && entity.clave == clave) {
-            User(id = entity.id, nombre = entity.nombre, email = entity.email)
-        } else {
-            null
+            return@withContext User(id = entity.id, nombre = entity.nombre, email = entity.email)
         }
+        
+        // 2. Si no está local, probamos en la nube
+        try {
+            val response = api.loginUsuarioCloud(com.undef.superahorro.Loza.Urieta.data.remote.AuthRequest(email, clave))
+            if (response.isSuccessful && response.body()?.success == true) {
+                val cloudUser = response.body()!!.user!!
+                // Guardamos local para la próxima
+                userDao.insertarUsuario(UserEntity(nombre = cloudUser.nombre, email = cloudUser.email, clave = clave))
+                return@withContext User(id = 0, nombre = cloudUser.nombre, email = cloudUser.email)
+            }
+        } catch (e: Exception) {
+            Log.e("Repository", "Error en login cloud: ${e.message}")
+        }
+        
+        null
     }
 
     suspend fun actualizarNombreUsuario(email: String, nuevoNombre: String) = withContext(Dispatchers.IO) {
@@ -100,14 +124,20 @@ class SuperAhorroRepository(
     // --- OPERACIONES DE ESCRITURA Y NETWORKING (POST) ---
 
     suspend fun agregarCompra(compra: Compra): Long = withContext(Dispatchers.IO) {
-        val id = compraDao.insertarCompra(compra)
-        sincronizarConServidor(compra.copy(id = id.toInt()))
+        val userEmail = settingsRepository.userEmailFlow.first()
+        val compraConUser = compra.copy(usuarioEmail = userEmail)
+        
+        val id = compraDao.insertarCompra(compraConUser)
+        sincronizarConServidor(compraConUser.copy(id = id.toInt()))
         id
     }
 
     suspend fun actualizarCompra(compra: Compra) = withContext(Dispatchers.IO) {
-        compraDao.actualizarCompra(compra)
-        sincronizarConServidor(compra)
+        val userEmail = settingsRepository.userEmailFlow.first()
+        val compraConUser = compra.copy(usuarioEmail = userEmail)
+        
+        compraDao.actualizarCompra(compraConUser)
+        sincronizarConServidor(compraConUser)
     }
 
     private suspend fun sincronizarConServidor(compra: Compra) {
@@ -165,10 +195,13 @@ class SuperAhorroRepository(
 
     suspend fun verificarPresupuesto(categoria: String, monto: Double): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         try {
+            val userEmail = settingsRepository.userEmailFlow.first()
             val response = api.verificarGastoSeguro(
                 com.undef.superahorro.Loza.Urieta.data.remote.BudgetCheckRequest(
                     categoria = categoria, 
-                    montoSolicitado = monto
+                    montoSolicitado = monto,
+                    presupuestoTotal = null, // Podríamos permitir configurarlo en el futuro
+                    usuarioEmail = userEmail
                 )
             )
             Pair(response.safe, response.message)

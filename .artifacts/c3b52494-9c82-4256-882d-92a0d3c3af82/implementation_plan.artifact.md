@@ -1,36 +1,48 @@
-# Plan de Consolidación - Android & Backend (Revisión de Compañero)
+# Plan de Implementación - Sincronización de Usuarios y Multiusuario (Cloud Auth)
 
-Este plan detalla el proceso para fusionar los cambios subidos por tu compañero, analizando su calidad y asegurando que la versión final sea la más completa y funcional (incluyendo IA, Algoritmo del Banquero y Sincronización Total).
+Este plan detalla la migración hacia una arquitectura multiusuario real, donde los datos de perfil y compras están vinculados a una cuenta en la nube (Supabase). Esto permite que varios usuarios usen la misma app sin mezclar sus gastos.
 
 ## User Review Required
 
-> [!CAUTION]
-> **Calidad del Código del Compañero:** Tras analizar los repositorios, he detectado que la versión subida por tu compañero es **incompleta** en comparación con la que construimos:
-> 1. **Backend:** Su `server.js` solo tiene 1 endpoint (supermercados), faltándole toda la lógica de sincronización de compras, IA y el Algoritmo del Banquero.
-> 2. **Android:** La interfaz de la API tiene nombres de campos en español que no coinciden con las mejores prácticas y carece de parámetros esenciales para el algoritmo de seguridad.
-> 3. **Hardcoding:** Ha dejado credenciales de Supabase hardcodeadas en el código del servidor.
-
-**Decisión Propuesta:** Mantener los commits de tu compañero en el historial (para que sume puntos), pero realizar una **"Consolidación Final"** que sobreescriba los archivos con nuestra versión optimizada y completa.
+> [!IMPORTANT]
+> **Privacidad de Datos:** A partir de este cambio, cada compra enviada al servidor incluirá el `email` del usuario logueado. En Supabase, solo se podrán ver las compras asociadas a ese email.
+>
+> **Migración de Datos:** Las compras que ya están en Supabase quedarán como "huérfanas" (sin email) a menos que las asignemos manualmente a tu usuario de prueba.
 
 ## Proposed Changes
 
-### 1. Repositorio Android (Merge & Fix)
-- Realizar un `merge` de la rama del compañero.
-- Resolver conflictos priorizando **nuestra versión** (que incluye `@SerializedName`, categorías y validaciones completas).
-- Crear un commit final de "Consolidación de Arquitectura".
+### [Component Name] Backend (Node.js)
 
-### 2. Repositorio Backend (Restore functionality)
-- Restaurar el archivo `server.js` completo (con IA, Banquero, CORS y variables de entorno).
-- Restaurar el `package.json` con todas las dependencias.
-- Mantener su repositorio de GitHub pero con el código funcional.
+#### [MODIFY] [database.sql](file:///C:/Users/Tomi Losa/AndroidStudioProjects/SuperAhorro-Backend/database.sql)
+- Crear tabla `usuarios_cloud` (id, nombre, email, clave).
+- Modificar tabla `compras` añadiendo la columna `usuario_email` (TEXT).
+
+#### [MODIFY] [server.js](file:///C:/Users/Tomi Losa/AndroidStudioProjects/SuperAhorro-Backend/server.js)
+- Implementar endpoint `POST /api/v1/usuarios/registrar`: Guarda el usuario en Supabase tras validarlo.
+- Implementar endpoint `POST /api/v1/usuarios/login`: Valida las credenciales contra la base de datos cloud.
+- Actualizar `POST /api/v1/compras`: Ahora procesará el campo `usuario_email` enviado desde la app.
+- Actualizar `POST /api/v1/budget/check`: El algoritmo ahora solo sumará los gastos del usuario que hace la consulta.
+
+### [Component Name] Android App
+
+#### [MODIFY] [SuperAhorroApi.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/remote/SuperAhorroApi.kt)
+- Añadir modelos `AuthRequest` y `AuthResponse`.
+- Definir endpoints `registrarUsuarioCloud` y `loginUsuarioCloud`.
+
+#### [MODIFY] [Models.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/model/Models.kt)
+- Añadir campo `usuarioEmail: String` a la data class `Compra`.
+
+#### [MODIFY] [SuperAhorroRepository.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/SuperAhorroRepository.kt)
+- Sincronizar el registro local con el registro cloud.
+- Al agregar compras, obtener el email activo desde el `SettingsRepository` para incluirlo en el envío.
 
 ## Verification Plan
 
 ### Automated Tests
-- Verificar que el servidor inicie correctamente con `npm start`.
-- Probar los endpoints `GET /supermercados`, `POST /compras`, `POST /chat` y `POST /budget/check`.
+- Scripts `curl` para registrar un usuario y luego verificar que sus compras se guardan con su email.
 
 ### Manual Verification
-1. Abrir la app Android.
-2. Probar el flujo completo: Nueva Compra -> Sincronizar -> Chat IA -> Verificar Gasto Seguro.
-3. Confirmar que los datos aparecen en Supabase.
+1. Crear una cuenta nueva desde la app.
+2. Verificar en el panel de Supabase que el usuario aparece en la tabla `usuarios_cloud`.
+3. Cargar un gasto de $500.
+4. Verificar que en la tabla `compras` de Supabase, la nueva fila tiene tu email.

@@ -41,15 +41,16 @@ data class Compra(
     val hora: String,             // formato HH:mm
     val supermercado: String,
     val total: Double,
-    val categoria: String = "Otros", // Nueva columna
+    val categoria: String = "Otros",
+    val usuarioEmail: String = "", // Nueva columna para multiusuario
     val ticketImagenUri: String? = null,
     
     @Ignore
     val productos: List<Producto> = emptyList()
 ) {
     // Constructor secundario para Room (ya que ignora 'productos')
-    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, categoria: String, ticketImagenUri: String?) : 
-        this(id, fecha, hora, supermercado, total, categoria, ticketImagenUri, emptyList())
+    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, categoria: String, usuarioEmail: String, ticketImagenUri: String?) : 
+        this(id, fecha, hora, supermercado, total, categoria, usuarioEmail, ticketImagenUri, emptyList())
 }
 
 /**
