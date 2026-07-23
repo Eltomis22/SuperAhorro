@@ -17,12 +17,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.undef.superahorro.Loza.Urieta.R
 import com.undef.superahorro.Loza.Urieta.ui.AppSettings
@@ -33,11 +36,14 @@ import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsScreen(
+    navController: NavHostController,
+    viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+) {
 
-    val darkMode = AppSettings.darkMode
-    val notifications = AppSettings.notificationsEnabled
-    val biometric = AppSettings.biometricEnabled
+    val darkMode by viewModel.darkModeFlow.collectAsStateWithLifecycle()
+    val notifications by viewModel.notificationsEnabledFlow.collectAsStateWithLifecycle()
+    val biometric by viewModel.biometricEnabledFlow.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -67,7 +73,10 @@ fun SettingsScreen(navController: NavHostController) {
                     title = stringResource(R.string.settings_dark_mode),
                     subtitle = stringResource(R.string.settings_dark_mode_hint),
                     checked = darkMode,
-                    onCheckedChange = { AppSettings.darkMode = it }
+                    onCheckedChange = { 
+                        viewModel.setDarkMode(it)
+                        AppSettings.darkMode = it
+                    }
                 )
             }
 
@@ -76,7 +85,7 @@ fun SettingsScreen(navController: NavHostController) {
                     title = stringResource(R.string.settings_notifications),
                     subtitle = stringResource(R.string.settings_notifications_hint),
                     checked = notifications,
-                    onCheckedChange = { AppSettings.notificationsEnabled = it }
+                    onCheckedChange = { viewModel.setNotificationsEnabled(it) }
                 )
             }
 
@@ -85,7 +94,7 @@ fun SettingsScreen(navController: NavHostController) {
                     title = stringResource(R.string.settings_biometric),
                     subtitle = stringResource(R.string.settings_biometric_hint),
                     checked = biometric,
-                    onCheckedChange = { AppSettings.biometricEnabled = it }
+                    onCheckedChange = { viewModel.setBiometricEnabled(it) }
                 )
             }
 

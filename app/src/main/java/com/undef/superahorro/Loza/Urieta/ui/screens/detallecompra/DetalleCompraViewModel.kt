@@ -36,6 +36,20 @@ class DetalleCompraViewModel(
         }
     }
 
+    fun eliminarCompra(onSuccess: () -> Unit) {
+        val compraId = _uiState.value.compra?.id ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                repository.eliminarCompra(compraId)
+                _uiState.update { it.copy(isLoading = false) }
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

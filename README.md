@@ -1,92 +1,73 @@
 # SuperAhorro
 
-App Android profesional para el control inteligente de gastos y compras de supermercado. Permite la gestión completa de tickets, productos, estadísticas en tiempo real y sincronización con la nube.
+App Android profesional para el control inteligente de gastos y compras de supermercado. Permite la gestión completa de tickets, productos, estadísticas en tiempo real y sincronización total con la nube.
 
 > **Trabajo Práctico Integrador — Tecnologías Móviles 2026 · UNDEF**
 > Autores: **Loza · Urieta**
 
 ---
 
-## 🚀 Características (2da Entrega)
+## 🚀 Características Finales
 
-- **Autenticación Real:** Sistema de Login y Registro con persistencia en base de datos local.
-- **Gestión de Compras (CRUD):** Registro completo de compras y productos vinculados, con almacenamiento persistente.
-- **Dashboard Premium:** Inicio dinámico con widgets de "Súper Favorito", "Ahorro Estimado" y consejos inteligentes.
-- **Estadísticas Dinámicas:** Gráficos de barras animados y evolución de gastos calculados en tiempo real desde la DB.
-- **Cámara e Intents:** Captura de tickets físicos mediante la cámara del sistema con gestión de permisos y visualización externa.
-- **Internacionalización Nativa:** Detección automática del idioma según la configuración del dispositivo.
-- **Diseño Moderno:** Interfaz de alta fidelidad con paleta "Bosque Esmeralda", bordes redondeados y micro-animaciones.
+- **Autenticación Multi-Factor:** Login/Registro local en Room + **Autenticación Biométrica** (Huella digital).
+- **Sincronización Cloud Real:** Sincronización automática de compras con un **Backend propio en Node.js** alojado en Render y base de datos **Supabase**.
+- **IA Generativa (Gemini):** Chat inteligente integrado en el backend que analiza tus gastos reales para darte consejos financieros personalizados.
+- **Seguridad Financiera:** Implementación del **Algoritmo del Banquero** (evasión de deadlocks) para verificar si un gasto es seguro basándose en tu presupuesto mensual.
+- **Gestión de Archivos:** Captura de tickets con la cámara y gestión inteligente del almacenamiento (eliminación física de fotos al borrar compras).
+- **Internacionalización:** App 100% bilingüe (Español / Inglés) detectando la configuración del sistema.
+- **Modo Oscuro:** Soporte nativo para modo oscuro persistido en DataStore.
 
 ---
 
-## 🛠️ Stack Técnico
+## 🛠️ Stack Técnico Completo
 
 | Capa | Tecnología |
 |---|---|
 | **UI** | Jetpack Compose (Material 3) |
 | **Arquitectura** | MVVM + Repository Pattern |
-| **Base de Datos** | **Room** (SQLite) con DAOs y migraciones |
-| **Networking** | **Retrofit 2** + Gson (GET/POST) |
-| **Persistencia Simple** | **Jetpack DataStore** (Sesión y Ajustes) |
-| **Imágenes/Hardware** | **Intents** (Camera, Share, View) + FileProvider |
-| **Async** | Kotlin Coroutines & Flow (Tiempo real) |
-| **Dependency Injection** | Manual DI via Application class |
+| **Persistencia Local** | **Room** (SQLite) + **Jetpack DataStore** |
+| **Backend** | **Node.js** + **Express** (Alojado en Render) |
+| **Base de Datos Cloud** | **Supabase** (PostgreSQL) |
+| **IA** | **Google Gemini 1.5 Flash** (Backend Proxy) |
+| **Seguridad** | **Biometric Library** + Algoritmo del Banquero |
+| **Async** | Kotlin Coroutines & Flow |
 
 ---
 
 ## 🏛️ Arquitectura y Flujo de Datos
 
-La aplicación implementa una arquitectura **MVVM (Model-View-ViewModel)** robusta, garantizando la separación de responsabilidades:
+La aplicación implementa una arquitectura **MVVM** robusta:
 
-1.  **View (Compose):** Pantallas reactivas que observan el estado del ViewModel.
-2.  **ViewModel:** Gestiona el estado de la UI y la lógica de negocio usando `StateFlow`.
-3.  **Repository:** Actúa como mediador y fuente única de verdad, coordinando:
-    *   **Room:** Almacenamiento local para compras, productos y usuarios.
-    *   **Retrofit:** Sincronización remota y obtención de datos externos.
-    *   **DataStore:** Persistencia de estado de sesión y preferencias de la app.
+1.  **View (Compose):** Interfaz reactiva e internacionalizada.
+2.  **ViewModel:** Gestión de estado y lógica de UI.
+3.  **Repository:** Mediador entre Room, DataStore y la API de Render.
+4.  **Backend Proxy:** Protege la API Key de Gemini y centraliza la lógica pesada (IA y Algoritmos).
 
 ---
 
-## 📋 Cumplimiento de la Consigna (Bloques A-D)
+## 📋 Cumplimiento de la Consigna (Bloques A-D + Agregados)
 
 | Bloque | Requisito | Implementación |
 |---|---|---|
-| **A** | **Sesión y Preferencias** | Login/Registro real persistido en Room. Estado de sesión y modo oscuro en **DataStore**. |
-| **B** | **Persistencia (Room)** | Base de datos con 3 tablas vinculadas (`compras`, `productos`, `usuarios`). Uso de DAOs y `fallbackToDestructiveMigration`. |
-| **C** | **Networking (Retrofit)** | **GET:** Lista de supermercados desde API. **POST:** Sincronización de compras cargadas al servidor. |
-| **D** | **Device Intents** | **Cámara:** `TakePicture` para tickets. **Compartir:** `ACTION_SEND` para resúmenes. **Ver:** `ACTION_VIEW` para abrir fotos. |
+| **A** | **Sesión y Preferencias** | Login/Registro real. Biometría. DataStore para temas y sesión. |
+| **B** | **Persistencia (Room)** | DB con 3 tablas vinculadas y borrado físico de archivos. |
+| **C** | **Networking (Retrofit)** | Backend Node.js en Render. Sincronización completa (GET/POST/DELETE). |
+| **D** | **Device Intents** | Cámara, Compartir Ticket, Ver Imagen en Galería. |
+| **Extra** | **IA y Algoritmos** | Chat con Gemini IA y Simulador Seguro (Banquero). |
 
 ---
 
 ## 🔧 Cómo correr el proyecto
 
-### Requisitos
-- **Android Studio** Ladybug o superior.
-- Dispositivo físico o emulador con **Android 11 (API 30)** o superior.
+### 1. Backend (Opcional si usas el de Render)
+El servidor reside en su propio repositorio: `SuperAhorro-Backend`.
+Requiere `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GEMINI_API_KEY`.
 
-### Pasos
+### 2. Android App
 1. Cloná el repo: `git clone https://github.com/Eltomis22/SuperAhorro.git`
-2. Abrí el proyecto en Android Studio y sincronizá Gradle.
-3. Ejecutá la app (`Shift + F10`).
-4. **Nota:** Para probar la autenticación real, primero debés ir a "Registrarse" y crear una cuenta local.
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-app/src/main/java/com/undef/superahorro/Loza/Urieta/
-├── data/
-│   ├── local/          # Room DB, DAOs (CompraDao, UserDao)
-│   ├── remote/         # Retrofit API interface
-│   ├── model/          # Entidades y Modelos de dominio
-│   └── SuperAhorroRepository.kt  # Fuente única de verdad
-├── ui/
-│   ├── screens/        # Pantallas organizadas por feature (Auth, Purchases, Stats, etc.)
-│   ├── theme/          # Sistema de diseño, Colores Premium y Tipografía
-│   └── util/           # Helpers (Formatters, ColorUtils, etc.)
-└── navigation/         # Grafo de navegación y rutas tipadas
-```
+2. Abrí el proyecto en Android Studio Ladybug.
+3. Sincronizá Gradle y ejecutá (`Shift + F10`).
+4. **Nota:** Para usar la biometría, actívala primero en la pantalla de Configuración.
 
 ---
 

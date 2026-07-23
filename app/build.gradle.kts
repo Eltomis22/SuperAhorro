@@ -81,6 +81,9 @@ dependencies {
     // IA (Paso Final - Chat)
     implementation(libs.google.generativeai)
 
+    // Biometría (Fase 3 - Entrega Final)
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

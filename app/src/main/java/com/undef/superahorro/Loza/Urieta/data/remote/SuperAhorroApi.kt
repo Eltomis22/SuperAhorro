@@ -4,8 +4,10 @@ import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * Interfaz de Retrofit para definir las llamadas a la API remota.
@@ -24,6 +26,12 @@ interface SuperAhorroApi {
      */
     @POST("compras")
     suspend fun sincronizarCompra(@Body compra: Compra): Response<ApiResponse>
+
+    /**
+     * DELETE: Elimina una compra del servidor.
+     */
+    @DELETE("compras/{id}")
+    suspend fun eliminarCompraRemota(@Path("id") idLocal: Int): Response<ApiResponse>
 
     /**
      * POST: Envía un mensaje al chat con IA en el servidor.

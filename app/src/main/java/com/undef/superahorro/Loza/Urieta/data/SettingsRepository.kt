@@ -25,6 +25,8 @@ class SettingsRepository(private val context: Context) {
         val USER_ID = booleanPreferencesKey("user_id") 
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_EMAIL = stringPreferencesKey("user_email")
+        val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
+        val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
     /** Obtiene el nombre del usuario guardado */
@@ -32,6 +34,12 @@ class SettingsRepository(private val context: Context) {
 
     /** Obtiene el email del usuario guardado */
     val userEmailFlow: Flow<String> = context.dataStore.data.map { it[PreferencesKeys.USER_EMAIL] ?: "usuario@email.com" }
+
+    /** Observa si la biometría está activa */
+    val biometricEnabledFlow: Flow<Boolean> = context.dataStore.data.map { it[PreferencesKeys.BIOMETRIC_ENABLED] ?: false }
+
+    /** Observa si las notificaciones están activas */
+    val notificationsEnabledFlow: Flow<Boolean> = context.dataStore.data.map { it[PreferencesKeys.NOTIFICATIONS_ENABLED] ?: true }
 
     /** Observa si el usuario está logueado */
     val isLoggedInFlow: Flow<Boolean> = context.dataStore.data
@@ -76,6 +84,20 @@ class SettingsRepository(private val context: Context) {
     suspend fun setDarkMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DARK_MODE] = enabled
+        }
+    }
+
+    /** Actualiza la biometría en el disco */
+    suspend fun setBiometricEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BIOMETRIC_ENABLED] = enabled
+        }
+    }
+
+    /** Actualiza las notificaciones en el disco */
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = enabled
         }
     }
 

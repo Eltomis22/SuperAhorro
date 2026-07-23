@@ -40,6 +40,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,8 +111,27 @@ fun DetalleCompraScreen(
                     }) {
                         Icon(Icons.Filled.Edit, null)
                     }
-                    IconButton(onClick = { /* TODO eliminar */ }) {
+
+                    // DIÁLOGO DE CONFIRMACIÓN
+                    var showDeleteDialog by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Filled.Delete, null)
+                    }
+
+                    if (showDeleteDialog) {
+                        com.undef.superahorro.Loza.Urieta.ui.components.ConfirmDialog(
+                            title = stringResource(R.string.dialog_delete_purchase_title),
+                            message = stringResource(R.string.dialog_delete_purchase_msg),
+                            confirmText = stringResource(R.string.action_delete),
+                            onConfirm = {
+                                viewModel.eliminarCompra {
+                                    navController.popBackStack()
+                                }
+                                showDeleteDialog = false
+                            },
+                            onDismiss = { showDeleteDialog = false }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

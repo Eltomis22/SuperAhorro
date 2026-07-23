@@ -13,6 +13,8 @@ import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.net.URI
 
 class SuperAhorroRepository(
     private val compraDao: CompraDao,
@@ -117,7 +119,31 @@ class SuperAhorroRepository(
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
+        // 1. Obtener la compra para ver si tiene ticket
+        val compra = compraDao.obtenerCompraPorId(compraId)
+        
+        // 2. Si tiene ticket, intentar borrar el archivo físico para liberar espacio
+        compra?.ticketImagenUri?.let { uriString ->
+            try {
+                val file = File(URI(uriString))
+                if (file.exists()) {
+                    file.delete()
+                    Log.d("Repository", "Archivo de ticket eliminado: ${file.name}")
+                }
+            } catch (e: Exception) {
+                Log.w("Repository", "No se pudo borrar el archivo físico del ticket: ${e.message}")
+            }
+        }
+
+        // 3. Borrar de la base de datos local (Room borrará productos por cascada)
         compraDao.eliminarCompraPorId(compraId)
+
+        // 4. Avisar al servidor para sincronizar el borrado
+        try {
+            api.eliminarCompraRemota(compraId)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error al eliminar en la nube: ${e.message}")
+        }
     }
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
