@@ -16,7 +16,7 @@ interface SuperAhorroApi {
     /**
      * GET: Obtiene la lista de supermercados sugeridos desde el servidor.
      */
-    @GET("api/v1/supermercados")
+    @GET("supermercados")
     suspend fun obtenerSupermercados(): List<String>
 
     /**
@@ -41,8 +41,8 @@ interface SuperAhorroApi {
         // LOCAL: Usa esta URL para probar con el servidor corriendo en tu PC (Node.js)
         // const val BASE_URL = "http://10.0.2.2:3000/api/v1/"
         
-        // PRODUCCIÓN: Cambia esto por la URL que te de Render después de desplegar
-        const val BASE_URL = "https://tu-app-en-render.onrender.com/api/v1/"
+        // PRODUCCIÓN: Esta es tu URL real en Render
+        const val BASE_URL = "https://super-ahorro-backend.onrender.com/api/v1/"
     }
 }
 

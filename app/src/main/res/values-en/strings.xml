@@ -155,4 +155,9 @@
     <string name="new_purchase_change_ticket">Tap to change photo</string>
     <string name="error_budget_offline">Could not verify budget (Offline mode).</string>
 
+    <!-- Stats Extras -->
+    <string name="stats_no_data">No data yet.</string>
+    <string name="stats_no_products">No products yet.</string>
+    <string name="stats_error_prefix">Error: %1$s</string>
+
 </resources>

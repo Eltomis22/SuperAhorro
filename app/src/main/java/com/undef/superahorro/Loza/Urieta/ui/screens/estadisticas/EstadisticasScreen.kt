@@ -90,7 +90,7 @@ fun EstadisticasScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Error: ${state.error}", color = MaterialTheme.colorScheme.error)
+                Text(text = stringResource(R.string.stats_error_prefix, state.error ?: ""), color = MaterialTheme.colorScheme.error)
             }
         } else {
             LazyColumn(
@@ -118,7 +118,7 @@ fun EstadisticasScreen(
                 item {
                     ChartCard(title = stringResource(R.string.stats_monthly_evolution)) {
                         if (state.gastoMensual.isEmpty()) {
-                            Text("No hay datos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.stats_no_data), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
                             // Usamos un color contrastante (Violeta/Indigo) para que resalte del verde
                             ModernBarChart(data = state.gastoMensual)
@@ -129,7 +129,7 @@ fun EstadisticasScreen(
                 item {
                     ChartCard(title = stringResource(R.string.stats_by_supermarket)) {
                         if (state.gastoPorSupermercado.isEmpty()) {
-                            Text("No hay datos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.stats_no_data), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 state.gastoPorSupermercado.forEach { (sm, monto) ->
@@ -148,7 +148,7 @@ fun EstadisticasScreen(
                 item {
                     ChartCard(title = stringResource(R.string.stats_top_products)) {
                         if (state.productosMasComprados.isEmpty()) {
-                            Text("No hay productos aún.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.stats_no_products), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 state.productosMasComprados.forEachIndexed { idx, (nombre, cant) ->

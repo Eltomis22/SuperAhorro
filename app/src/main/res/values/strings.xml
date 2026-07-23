@@ -170,4 +170,9 @@
     <string name="new_purchase_change_ticket">Toca para cambiar la foto</string>
     <string name="error_budget_offline">No se pudo verificar el presupuesto (Modo Offline).</string>
 
+    <!-- Estadísticas Extras -->
+    <string name="stats_no_data">No hay datos aún.</string>
+    <string name="stats_no_products">No hay productos aún.</string>
+    <string name="stats_error_prefix">Error: %1$s</string>
+
 </resources>
