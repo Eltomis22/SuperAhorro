@@ -38,6 +38,7 @@ class SuperAhorroApp : Application() {
 
     val repository by lazy {
         SuperAhorroRepository(
+            context = this,
             compraDao = database.compraDao(),
             productoDao = database.productoDao(),
             userDao = database.userDao(),

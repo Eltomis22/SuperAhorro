@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.URI
 
 class SuperAhorroRepository(
+    private val context: android.content.Context,
     private val compraDao: CompraDao,
     private val productoDao: ProductoDao,
     private val userDao: UserDao,
@@ -155,10 +155,23 @@ class SuperAhorroRepository(
         // 2. Si tiene ticket, intentar borrar el archivo físico para liberar espacio
         compra?.ticketImagenUri?.let { uriString ->
             try {
-                val file = File(URI(uriString))
-                if (file.exists()) {
-                    file.delete()
-                    Log.d("Repository", "Archivo de ticket eliminado: ${file.name}")
+                // Forma segura de obtener el archivo desde una URI de FileProvider
+                // Solo si la URI es local (empieza con content:// o file://)
+                val uri = android.net.Uri.parse(uriString)
+                if (uri.scheme == "file") {
+                    val file = File(uri.path ?: "")
+                    if (file.exists()) file.delete()
+                } else if (uri.scheme == "content") {
+                    // Para URIs de tipo content (FileProvider), borrar el archivo real
+                    // que reside en la carpeta Pictures de la app.
+                    val fileName = uri.lastPathSegment // ej: my_images/ticket_123.jpg
+                    fileName?.split("/")?.last()?.let { nameOnly ->
+                        val file = File(context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), nameOnly)
+                        if (file.exists()) {
+                            file.delete()
+                            Log.d("Repository", "Archivo de ticket eliminado: $nameOnly")
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.w("Repository", "No se pudo borrar el archivo físico del ticket: ${e.message}")
