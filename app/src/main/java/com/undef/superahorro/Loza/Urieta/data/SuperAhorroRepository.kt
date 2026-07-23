@@ -193,6 +193,24 @@ class SuperAhorroRepository(
 
     // --- ALGORITMO DEL BANQUERO ---
 
+    suspend fun obtenerMisPresupuestos(): List<com.undef.superahorro.Loza.Urieta.data.remote.BudgetLimit> = withContext(Dispatchers.IO) {
+        try {
+            val email = settingsRepository.userEmailFlow.first()
+            api.obtenerPresupuestos(email)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun guardarMisPresupuestos(lista: List<com.undef.superahorro.Loza.Urieta.data.remote.BudgetLimit>) = withContext(Dispatchers.IO) {
+        try {
+            val email = settingsRepository.userEmailFlow.first()
+            api.guardarPresupuestos(com.undef.superahorro.Loza.Urieta.data.remote.SaveBudgetRequest(email, lista))
+        } catch (e: Exception) {
+            Log.e("Repository", "Error al guardar presupuestos: ${e.message}")
+        }
+    }
+
     suspend fun verificarPresupuesto(categoria: String, monto: Double): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         try {
             val userEmail = settingsRepository.userEmailFlow.first()

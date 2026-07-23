@@ -8,6 +8,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Interfaz de Retrofit para definir las llamadas a la API remota.
@@ -44,6 +45,18 @@ interface SuperAhorroApi {
      */
     @POST("budget/check")
     suspend fun verificarGastoSeguro(@Body request: BudgetCheckRequest): BudgetCheckResponse
+
+    /**
+     * GET: Obtiene los presupuestos configurados por el usuario.
+     */
+    @GET("presupuestos")
+    suspend fun obtenerPresupuestos(@Query("email") email: String): List<BudgetLimit>
+
+    /**
+     * POST: Guarda o actualiza los presupuestos del usuario.
+     */
+    @POST("presupuestos")
+    suspend fun guardarPresupuestos(@Body request: SaveBudgetRequest): Response<ApiResponse>
 
     /**
      * POST: Registrar usuario en la nube.
@@ -122,4 +135,18 @@ data class AuthResponse(
 data class User(
     val nombre: String,
     val email: String
+)
+
+/**
+ * Modelos para Gestión de Presupuestos
+ */
+data class BudgetLimit(
+    val categoria: String,
+    @SerializedName("monto_maximo")
+    val montoMaximo: Double
+)
+
+data class SaveBudgetRequest(
+    val email: String,
+    val presupuestos: List<BudgetLimit>
 )

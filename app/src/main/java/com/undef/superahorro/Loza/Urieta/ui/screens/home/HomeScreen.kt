@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
@@ -81,6 +82,9 @@ fun HomeScreen(
                 title = stringResource(R.string.home_hello, state.usuarioNombre.split(" ").getOrNull(0) ?: ""),
                 subtitle = stringResource(R.string.home_subtitle),
                 actions = {
+                    IconButton(onClick = { navController.navigate(Screen.Presupuestos.route) }) {
+                        Icon(Icons.Filled.AccountBalanceWallet, null)
+                    }
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Filled.Notifications, null)
                     }
@@ -153,7 +157,8 @@ fun HomeScreen(
                                 title = stringResource(R.string.home_label_savings),
                                 value = Formatters.formatearMoneda(state.ahorroEstimado),
                                 icon = Icons.AutoMirrored.Filled.TrendingUp,
-                                color = InfoSavingsBg
+                                color = InfoSavingsBg,
+                                onClick = { navController.navigate(Screen.Presupuestos.route) }
                             )
                         }
                     }
@@ -277,10 +282,11 @@ private fun InfoMiniCard(
     title: String,
     value: String,
     icon: ImageVector,
-    color: Color
+    color: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable { onClick() } else modifier,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = color)
     ) {

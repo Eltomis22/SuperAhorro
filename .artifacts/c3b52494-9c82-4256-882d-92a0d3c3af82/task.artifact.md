@@ -1,7 +1,6 @@
-- [x] Consolidar cambios del repositorio Android (Merge con preferencia local)
-- [x] Restaurar funcionalidad completa en el Backend (IA, Banquero, Sincronización)
-- [x] Eliminar carpeta `backend/` duplicada en el proyecto Android
-- [x] Limpiar redundancias e inconsistencias post-merge en Android (ViewModels, Repository, Strings)
-- [x] Implementar Sincronización de Usuarios y Multiusuario (Cloud Auth)
-- [x] Actualizar esquemas de base de datos en Supabase (Usuarios y vínculo con Compras)
-- [x] Verificar configuración de red y permisos finales
+- [x] Actualizar base de datos en Supabase (Tabla presupuestos con email)
+- [x] Implementar endpoints de presupuestos en el Backend
+- [x] Definir modelos y métodos de API en Android
+- [x] Crear pantalla de configuración de presupuestos
+- [x] Integrar atajos en la pantalla de inicio (Home)
+- [ ] Verificar funcionamiento del Algoritmo del Banquero con límites dinámicos
