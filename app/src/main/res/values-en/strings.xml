@@ -160,4 +160,8 @@
     <string name="stats_no_products">No products yet.</string>
     <string name="stats_error_prefix">Error: %1$s</string>
 
+    <!-- Detail Extras -->
+    <string name="purchase_detail_not_found">The selected purchase was not found.</string>
+    <string name="error_unknown">Unknown error</string>
+
 </resources>

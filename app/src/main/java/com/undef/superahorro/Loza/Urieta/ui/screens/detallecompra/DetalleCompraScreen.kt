@@ -141,13 +141,13 @@ fun DetalleCompraScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (state.error != null) {
                 Text(
-                    text = state.error ?: "Error desconocido",
+                    text = state.error ?: stringResource(R.string.error_unknown),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else if (state.compra == null) {
                 Text(
-                    text = "No se encontró la compra seleccionada.",
+                    text = stringResource(R.string.purchase_detail_not_found),
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
