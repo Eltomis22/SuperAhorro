@@ -25,19 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -89,13 +77,12 @@ fun DetalleCompraScreen(
                 actions = {
                     state.compra?.let { compra ->
                         IconButton(onClick = {
-                            // Construimos la lista de productos para el mensaje
-                            val productosTexto = if (compra.productos.isEmpty()) {
+                            val productosTexto = if (state.productos.isEmpty()) {
                                 "- Sin productos registrados"
                             } else {
-                                compra.productos.take(5).joinToString("\n") { 
+                                state.productos.take(5).joinToString("\n") { 
                                     "- ${it.nombre}${if (!it.descripcion.isNullOrBlank()) ": ${it.descripcion}" else ""} (x${it.cantidad})" 
-                                } + if (compra.productos.size > 5) "\n...y otros más" else ""
+                                } + if (state.productos.size > 5) "\n...y otros más" else ""
                             }
 
                             val texto = shareTemplate.format(
@@ -232,15 +219,13 @@ fun DetalleCompraScreen(
                                     .fillMaxWidth()
                                     .height(120.dp)
                                     .clickable {
-                                        compra.ticketImagenUri?.let { uriString ->
-                                            try {
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    setDataAndType(Uri.parse(uriString), "image/*")
-                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                                }
-                                                context.startActivity(intent)
-                                            } catch (e: Exception) {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                setDataAndType(Uri.parse(compra.ticketImagenUri), "image/*")
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                             }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
                                         }
                                     },
                                 shape = RoundedCornerShape(16.dp),
@@ -294,7 +279,7 @@ fun DetalleCompraScreen(
                         )
                     }
 
-                    if (compra.productos.isEmpty()) {
+                    if (state.productos.isEmpty()) {
                         item {
                             Text(
                                 text = stringResource(R.string.purchase_detail_no_products),
@@ -302,7 +287,7 @@ fun DetalleCompraScreen(
                             )
                         }
                     } else {
-                        items(compra.productos, key = { it.id }) { producto ->
+                        items(state.productos, key = { it.id }) { producto ->
                             ProductoItemCard(
                                 producto = producto,
                                 onEdit = { 

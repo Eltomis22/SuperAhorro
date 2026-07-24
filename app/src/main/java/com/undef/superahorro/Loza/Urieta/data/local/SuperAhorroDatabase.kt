@@ -8,11 +8,12 @@ import com.undef.superahorro.Loza.Urieta.data.model.Compra
 import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
 
+import com.undef.superahorro.Loza.Urieta.data.model.PresupuestoEntity
 import com.undef.superahorro.Loza.Urieta.data.model.SupermercadoEntity
 
 @Database(
-    entities = [Compra::class, Producto::class, UserEntity::class, SupermercadoEntity::class], 
-    version = 3, // Subimos versión por la tabla de caché
+    entities = [Compra::class, Producto::class, UserEntity::class, SupermercadoEntity::class, PresupuestoEntity::class], 
+    version = 4, // Subimos versión por la tabla de presupuestos local
     exportSchema = false
 )
 abstract class SuperAhorroDatabase : RoomDatabase() {
@@ -21,6 +22,7 @@ abstract class SuperAhorroDatabase : RoomDatabase() {
     abstract fun productoDao(): ProductoDao
     abstract fun userDao(): UserDao
     abstract fun supermercadoDao(): SupermercadoDao
+    abstract fun presupuestoDao(): PresupuestoDao
 
     companion object {
         @Volatile

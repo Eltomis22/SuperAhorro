@@ -17,6 +17,7 @@ class SuperAhorroRepository(
     private val productoDao: ProductoDao,
     private val userDao: UserDao,
     private val supermercadoDao: SupermercadoDao,
+    private val presupuestoDao: PresupuestoDao,
     private val api: SuperAhorroApi,
     private val settingsRepository: SettingsRepository
 ) {
@@ -192,10 +193,10 @@ class SuperAhorroRepository(
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
         productoDao.insertarProducto(producto.copy(compraId = compraId))
-        // Refrescamos la compra entera en la nube para incluir el nuevo producto
         val compra = compraDao.obtenerCompraPorId(compraId)
         compra?.let {
-            val productos = productoDao.obtenerTodosLosProductosSnapshot(it.usuarioEmail ?: "")
+            val email = it.usuarioEmail ?: ""
+            val productos = productoDao.obtenerTodosLosProductosSnapshot(email)
                 .filter { p -> p.compraId == it.id }
             sincronizarConServidor(it.apply { this.productos = productos })
         }
@@ -209,12 +210,11 @@ class SuperAhorroRepository(
         val prod = productoDao.obtenerProductoPorId(id)
         val compraId = prod?.compraId
         productoDao.eliminarProductoPorId(id)
-        
-        // Refrescamos la compra en la nube tras borrar el producto
         compraId?.let { cid ->
             val compra = compraDao.obtenerCompraPorId(cid)
             compra?.let {
-                val productos = productoDao.obtenerTodosLosProductosSnapshot(it.usuarioEmail ?: "")
+                val email = it.usuarioEmail ?: ""
+                val productos = productoDao.obtenerTodosLosProductosSnapshot(email)
                     .filter { p -> p.compraId == it.id }
                 sincronizarConServidor(it.apply { this.productos = productos })
             }
@@ -229,16 +229,31 @@ class SuperAhorroRepository(
         }
     }
 
+    // --- ALGORITMO DEL BANQUERO ---
+
     suspend fun obtenerMisPresupuestos(): List<BudgetLimit> = withContext(Dispatchers.IO) {
+        val email = settingsRepository.userEmailFlow.first()
+        val locales = presupuestoDao.obtenerPorUsuario(email)
         try {
-            val email = settingsRepository.userEmailFlow.first()
-            api.obtenerPresupuestos(email)
-        } catch (_: Exception) { emptyList() }
+            val remotos = api.obtenerPresupuestos(email)
+            if (remotos.isNotEmpty()) {
+                presupuestoDao.eliminarPorUsuario(email)
+                presupuestoDao.insertarVarios(remotos.map { 
+                    PresupuestoEntity(categoria = it.categoria, montoMaximo = it.montoMaximo, usuarioEmail = email) 
+                })
+                return@withContext remotos
+            }
+        } catch (_: Exception) {}
+        locales.map { BudgetLimit(it.categoria, it.montoMaximo) }
     }
 
     suspend fun guardarMisPresupuestos(lista: List<BudgetLimit>) = withContext(Dispatchers.IO) {
+        val email = settingsRepository.userEmailFlow.first()
         try {
-            val email = settingsRepository.userEmailFlow.first()
+            presupuestoDao.eliminarPorUsuario(email)
+            presupuestoDao.insertarVarios(lista.map { 
+                PresupuestoEntity(categoria = it.categoria, montoMaximo = it.montoMaximo, usuarioEmail = email) 
+            })
             api.guardarPresupuestos(SaveBudgetRequest(email, lista))
         } catch (_: Exception) {}
     }

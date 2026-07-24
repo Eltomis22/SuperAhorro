@@ -37,6 +37,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
         topBar = {
@@ -47,7 +48,9 @@ fun HomeScreen(
                     IconButton(onClick = { navController.navigate(Screen.Presupuestos.route) }) {
                         Icon(Icons.Filled.AccountBalanceWallet, null)
                     }
-                    IconButton(onClick = { /* TODO */ }) {
+                    IconButton(onClick = { 
+                        android.widget.Toast.makeText(context, "Las alertas de presupuesto están activas", android.widget.Toast.LENGTH_SHORT).show()
+                    }) {
                         Icon(Icons.Filled.Notifications, null)
                     }
                     IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
