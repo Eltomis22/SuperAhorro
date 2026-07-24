@@ -59,20 +59,13 @@ data class Compra(
     val usuarioEmail: String? = "",
     
     @SerializedName("ticket_imagen_uri")
-    val ticketImagenUri: String? = null,
-    
+    val ticketImagenUri: String? = null
+) {
     @Ignore
     @SerializedName("productos")
-    val productos: List<Producto> = emptyList()
-) {
-    // Constructor secundario para Room
-    constructor(id: Int, fecha: String?, hora: String?, supermercado: String?, total: Double, categoria: String?, usuarioEmail: String?, ticketImagenUri: String?) : 
-        this(id, fecha, hora, supermercado, total, categoria, usuarioEmail, ticketImagenUri, emptyList())
+    var productos: List<Producto> = emptyList()
 }
 
-/**
- * Producto comprado dentro de una compra.
- */
 @Entity(
     tableName = "productos",
     foreignKeys = [
@@ -87,13 +80,26 @@ data class Compra(
 )
 data class Producto(
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("id")
     val id: Int = 0,
+    
+    @SerializedName("compra_id")
     val compraId: Int = 0, // Relación con la compra
-    val codigo: String,
-    val nombre: String,
-    val descripcion: String,
-    val cantidad: Int,
-    val precio: Double
+    
+    @SerializedName("codigo")
+    val codigo: String? = null,
+    
+    @SerializedName("nombre")
+    val nombre: String? = null,
+    
+    @SerializedName("descripcion")
+    val descripcion: String? = null,
+    
+    @SerializedName("cantidad")
+    val cantidad: Int = 0,
+    
+    @SerializedName("precio")
+    val precio: Double = 0.0
 ) {
     /** Computed property: cantidad × precio, calculado al leer. */
     val subtotal: Double get() = cantidad * precio

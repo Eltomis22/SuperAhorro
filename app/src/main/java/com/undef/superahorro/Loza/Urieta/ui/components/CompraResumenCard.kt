@@ -62,11 +62,11 @@ fun CompraResumenCard(
             Spacer(Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = compra.supermercado,
+                    text = compra.supermercado ?: "Sin nombre",
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${Formatters.formatearFecha(compra.fecha)} · ${compra.hora}",
+                    text = "${Formatters.formatearFecha(compra.fecha ?: "")} · ${compra.hora ?: ""}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

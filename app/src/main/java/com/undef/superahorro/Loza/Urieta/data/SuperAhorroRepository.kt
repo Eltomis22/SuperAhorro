@@ -106,7 +106,7 @@ class SuperAhorroRepository(
         val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
         if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
         
-        compras.groupBy { it.fecha.take(7) }
+        compras.groupBy { it.fecha?.take(7) ?: "N/A" }
             .map { (mes, lista) -> mes to lista.sumOf { it.total } }
             .sortedBy { it.first }
             .takeLast(6)
@@ -117,7 +117,7 @@ class SuperAhorroRepository(
         val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
         if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
 
-        compras.groupBy { it.supermercado }
+        compras.groupBy { it.supermercado ?: "Otros" }
             .map { (superName, lista) -> superName to lista.sumOf { it.total } }
             .sortedByDescending { it.second }
     }
@@ -176,12 +176,12 @@ class SuperAhorroRepository(
                     usuarioEmail = compraRemota.usuarioEmail ?: email
                 )
                 
-                // 1. Guardar la compra
-                compraDao.insertarCompra(compraSegura)
+                // 1. Guardar la compra y obtener el ID real generado por Room
+                val nuevoIdGenerado = compraDao.insertarCompra(compraSegura).toInt()
                 
-                // 2. Guardar sus productos si los trajo la nube
+                // 2. Guardar sus productos vinculándolos al ID correcto del celular
                 compraRemota.productos.forEach { prod ->
-                    productoDao.insertarProducto(prod.copy(compraId = compraSegura.id))
+                    productoDao.insertarProducto(prod.copy(compraId = nuevoIdGenerado))
                 }
             }
             Log.d("Repository", "Sincronización total completada: ${comprasRemotas.size} compras recuperadas con sus productos")

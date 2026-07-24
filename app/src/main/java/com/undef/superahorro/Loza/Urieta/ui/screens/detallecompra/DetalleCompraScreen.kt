@@ -91,8 +91,8 @@ fun DetalleCompraScreen(
                     state.compra?.let { compra ->
                         IconButton(onClick = {
                             val texto = shareTemplate.format(
-                                compra.supermercado,
-                                Formatters.formatearFecha(compra.fecha),
+                                compra.supermercado ?: "Super",
+                                Formatters.formatearFecha(compra.fecha ?: ""),
                                 "%,.0f".format(compra.total)
                             )
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -190,14 +190,14 @@ fun DetalleCompraScreen(
                         ) {
                             Column(modifier = Modifier.padding(20.dp)) {
                                 Text(
-                                    text = compra.supermercado,
+                                    text = compra.supermercado ?: "Sin nombre",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = "${Formatters.formatearFecha(compra.fecha)} · ${compra.hora}",
+                                    text = "${Formatters.formatearFecha(compra.fecha ?: "")} · ${compra.hora ?: ""}",
                                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                                     fontSize = 12.sp
                                 )

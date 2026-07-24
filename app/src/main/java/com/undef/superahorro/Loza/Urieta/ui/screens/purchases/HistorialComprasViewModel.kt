@@ -35,7 +35,7 @@ class HistorialComprasViewModel(
             try {
                 repository.obtenerTodasLasComprasFlow().collect { listaCompras ->
                     val comprasOrdenadas = listaCompras.sortedByDescending { it.fecha }
-                    val agrupadas = comprasOrdenadas.groupBy { it.fecha.substring(0, 7) }
+                    val agrupadas = comprasOrdenadas.groupBy { it.fecha?.substring(0, 7) ?: "N/A" }
                     _uiState.update { 
                         it.copy(
                             isLoading = false, 

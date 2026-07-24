@@ -211,10 +211,10 @@ fun NuevaCompraScreen(
 
     LaunchedEffect(state.compraCargada) {
         state.compraCargada?.let { compra ->
-            fecha = compra.fecha
-            hora = compra.hora
-            supermercado = compra.supermercado
-            categoria = compra.categoria
+            fecha = compra.fecha ?: LocalDate.now().toString()
+            hora = compra.hora ?: LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+            supermercado = compra.supermercado ?: ""
+            categoria = compra.categoria ?: "Otros"
             totalRaw = compra.total.toLong().toString()
             ticketUriString = compra.ticketImagenUri
         }

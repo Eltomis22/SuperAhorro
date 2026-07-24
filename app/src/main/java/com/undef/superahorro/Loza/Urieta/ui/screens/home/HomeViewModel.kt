@@ -46,7 +46,7 @@ class HomeViewModel(
                 
                 repository.obtenerTodasLasComprasFlow().collect { compras ->
                     val ultimas = compras.take(3)
-                    val comprasEsteMes = compras.filter { it.fecha.startsWith(currentYearMonth) }
+                    val comprasEsteMes = compras.filter { it.fecha?.startsWith(currentYearMonth) == true }
                     val total = comprasEsteMes.sumOf { it.total }
                     
                     // Lógica extra para "llenar" el inicio

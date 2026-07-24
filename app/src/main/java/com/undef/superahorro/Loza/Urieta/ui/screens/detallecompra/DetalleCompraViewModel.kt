@@ -26,7 +26,7 @@ class DetalleCompraViewModel(
                     _uiState.update { 
                         it.copy(
                             isLoading = false, 
-                            compra = relation?.compra?.copy(productos = relation.productos)
+                            compra = relation?.compra?.apply { productos = relation.productos }
                         ) 
                     }
                 }
