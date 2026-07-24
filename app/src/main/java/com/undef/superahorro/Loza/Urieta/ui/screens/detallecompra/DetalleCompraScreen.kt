@@ -321,14 +321,14 @@ private fun ProductoItemCard(producto: Producto) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(producto.nombre, fontWeight = FontWeight.SemiBold)
+                Text(producto.nombre ?: "Sin nombre", fontWeight = FontWeight.SemiBold)
                 Text(
-                    producto.descripcion,
+                    producto.descripcion ?: "",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Cód: ${producto.codigo}",
+                    text = "Cód: ${producto.codigo ?: "N/A"}",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

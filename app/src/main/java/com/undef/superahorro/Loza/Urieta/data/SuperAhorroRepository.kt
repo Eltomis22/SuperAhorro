@@ -22,7 +22,7 @@ class SuperAhorroRepository(
     private val productoDao: ProductoDao,
     private val userDao: UserDao,
     private val api: SuperAhorroApi,
-    private val settingsRepository: com.undef.superahorro.Loza.Urieta.data.SettingsRepository
+    private val settingsRepository: SettingsRepository
 ) {
 
     // --- SESIÓN Y USUARIOS ---
@@ -35,8 +35,8 @@ class SuperAhorroRepository(
         // 2. Cloud
         try {
             api.registrarUsuarioCloud(com.undef.superahorro.Loza.Urieta.data.remote.AuthRequest(email, clave, nombre))
-        } catch (e: Exception) {
-            Log.e("Repository", "Error al registrar en la nube: ${e.message}")
+        } catch (_: Exception) {
+            // Error de red ignorado para permitir registro offline
         }
     }
 
@@ -104,7 +104,7 @@ class SuperAhorroRepository(
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
         val email = settingsRepository.userEmailFlow.first()
         val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
-        if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
+        if (compras.isEmpty()) return@withContext emptyList()
         
         compras.groupBy { it.fecha?.take(7) ?: "N/A" }
             .map { (mes, lista) -> mes to lista.sumOf { it.total } }
@@ -115,7 +115,7 @@ class SuperAhorroRepository(
     suspend fun obtenerGastoPorSupermercado(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
         val email = settingsRepository.userEmailFlow.first()
         val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
-        if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
+        if (compras.isEmpty()) return@withContext emptyList()
 
         compras.groupBy { it.supermercado ?: "Otros" }
             .map { (superName, lista) -> superName to lista.sumOf { it.total } }
@@ -125,9 +125,9 @@ class SuperAhorroRepository(
     suspend fun obtenerProductosMasComprados(): List<Pair<String, Int>> = withContext(Dispatchers.IO) {
         val email = settingsRepository.userEmailFlow.first()
         val productos = productoDao.obtenerTodosLosProductosSnapshot(email)
-        if (productos.isEmpty()) return@withContext emptyList<Pair<String, Int>>()
+        if (productos.isEmpty()) return@withContext emptyList()
 
-        productos.groupBy { it.nombre }
+        productos.groupBy { it.nombre ?: "Sin nombre" }
             .map { (nombre, lista) -> nombre to lista.sumOf { it.cantidad } }
             .sortedByDescending { it.second }
             .take(5)
@@ -216,8 +216,8 @@ class SuperAhorroRepository(
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.w("Repository", "No se pudo borrar el archivo físico del ticket: ${e.message}")
+            } catch (_: Exception) {
+                // Error ignorado silenciosamente durante el borrado físico
             }
         }
 
