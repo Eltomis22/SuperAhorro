@@ -13,7 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import com.undef.superahorro.Loza.Urieta.data.SettingsRepository
 import com.undef.superahorro.Loza.Urieta.navigation.SuperAhorroNavGraph
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge()
@@ -38,13 +38,13 @@ class MainActivity : ComponentActivity() {
             var isUnlocked by rememberSaveable { mutableStateOf(false) }
             var biometricEnabled by remember { mutableStateOf(false) }
 
-            // Cargamos preferencias iniciales y verificamos biometría
+            // Cargamos preferencias iniciales
             LaunchedEffect(Unit) {
                 biometricEnabled = settingsRepo.biometricEnabledFlow.first()
                 AppSettings.darkMode = settingsRepo.darkModeFlow.first()
                 
-                // NOTA: La biometría se deshabilita temporalmente para solucionar 
-                // el crash de los 16 bits en la cámara.
+                // Entramos directo a la navegación. 
+                // El login biométrico ahora es una opción explícita en la pantalla de Login.
                 isUnlocked = true
             }
 

@@ -49,5 +49,6 @@ class SuperAhorroApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        com.undef.superahorro.Loza.Urieta.ui.util.NotificationHelper.createNotificationChannel(this)
     }
 }

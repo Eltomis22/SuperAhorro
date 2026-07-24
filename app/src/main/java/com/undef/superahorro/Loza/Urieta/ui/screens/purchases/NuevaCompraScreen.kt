@@ -138,7 +138,7 @@ fun NuevaCompraScreen(
     var supermercado by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("Otros") }
     
-    // Cambiamos 'total' para que guarde el texto crudo (sin puntos) mientras se escribe
+    // Texto crudo que permite una coma
     var totalRaw by remember { mutableStateOf("") }
     
     var menuExpanded by remember { mutableStateOf(false) }
@@ -215,7 +215,7 @@ fun NuevaCompraScreen(
             hora = compra.hora ?: LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
             supermercado = compra.supermercado ?: ""
             categoria = compra.categoria ?: "Otros"
-            totalRaw = compra.total.toLong().toString()
+            totalRaw = compra.total.toString().replace('.', ',')
             ticketUriString = compra.ticketImagenUri
         }
     }
@@ -361,12 +361,11 @@ fun NuevaCompraScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // TOTAL CON SEPARADOR DE MILES FLUIDO
+            // TOTAL CON SEPARADOR DE MILES Y DECIMALES
             OutlinedTextField(
                 value = totalRaw,
                 onValueChange = { input ->
-                    // Solo aceptamos números (para evitar que el usuario borre el punto visual y cause líos)
-                    if (input.all { it.isDigit() }) {
+                    if (input.count { it == ',' } <= 1 && input.all { it.isDigit() || it == ',' }) {
                         totalRaw = input
                     }
                 },
@@ -374,18 +373,18 @@ fun NuevaCompraScreen(
                 supportingText = { Text(stringResource(R.string.label_total_hint)) },
                 leadingIcon = { Icon(Icons.Filled.AttachMoney, null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                visualTransformation = Formatters.ThousandsSeparatorTransformation(), // El punto es SOLO visual
+                visualTransformation = Formatters.ThousandsSeparatorTransformation(), 
                 modifier = Modifier.fillMaxWidth()
             )
 
-            val totalNumerico = totalRaw.toDoubleOrNull()
+            val totalNumerico = totalRaw.replace(',', '.').toDoubleOrNull()
             
             // --- SIMULADOR DEL BANQUERO ---
             if (totalNumerico != null && totalNumerico > 0) {
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = { viewModel.verificarGastoSeguro(categoria, totalNumerico) },
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),

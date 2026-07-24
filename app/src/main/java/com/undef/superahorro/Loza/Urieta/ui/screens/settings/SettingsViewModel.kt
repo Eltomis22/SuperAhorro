@@ -8,11 +8,18 @@ import com.undef.superahorro.Loza.Urieta.data.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val repository: SettingsRepository
 ) : ViewModel() {
+
+    val userNameFlow: StateFlow<String> = repository.userNameFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Usuario")
+
+    val userEmailFlow: StateFlow<String> = repository.userEmailFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "usuario@email.com")
 
     val darkModeFlow: StateFlow<Boolean> = repository.darkModeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -32,6 +39,18 @@ class SettingsViewModel(
     fun setBiometricEnabled(enabled: Boolean) {
         viewModelScope.launch {
             repository.setBiometricEnabled(enabled)
+        }
+    }
+
+    /**
+     * Asegura que vinculamos al usuario real leyendo directamente del repositorio
+     * en lugar de confiar en el estado de la UI que puede ser asíncrono.
+     */
+    fun vincularUsuarioBiometria() {
+        viewModelScope.launch {
+            val name = repository.userNameFlow.first()
+            val email = repository.userEmailFlow.first()
+            repository.setBiometricUser(name, email)
         }
     }
 

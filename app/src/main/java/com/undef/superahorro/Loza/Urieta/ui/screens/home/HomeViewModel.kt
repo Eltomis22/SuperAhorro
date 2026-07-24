@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
 data class HomeUiState(
     val isLoading: Boolean = false,
@@ -22,6 +23,7 @@ data class HomeUiState(
     val totalMes: Double = 0.0,
     val ahorroEstimado: Double = 0.0,
     val superMasVisitado: String = "N/A",
+    val budgetMessage: String = "",
     val error: String? = null
 )
 
@@ -47,22 +49,32 @@ class HomeViewModel(
                 repository.obtenerTodasLasComprasFlow().collect { compras ->
                     val ultimas = compras.take(3)
                     val comprasEsteMes = compras.filter { it.fecha?.startsWith(currentYearMonth) == true }
-                    val total = comprasEsteMes.sumOf { it.total }
+                    val totalSpent = comprasEsteMes.sumOf { it.total }
                     
                     // Lógica extra para "llenar" el inicio
                     val superMasFrecuente = compras.groupBy { it.supermercado }
                         .maxByOrNull { it.value.size }?.key ?: "N/A"
                     
-                    val ahorroCalculado = total * 0.15 // Simulación: un 15% de ahorro ideal
+                    // CÁLCULO REAL DE AHORRO Y PRESUPUESTO
+                    val misPresupuestos = repository.obtenerMisPresupuestos()
+                    val limiteTotal = if (misPresupuestos.isEmpty()) 40000.0 else misPresupuestos.sumOf { it.montoMaximo }
+                    val ahorroCalculado = (limiteTotal - totalSpent).coerceAtLeast(0.0)
+                    
+                    val msg = if (totalSpent < limiteTotal) {
+                        "Te quedan ${Formatters.formatearMoneda(limiteTotal - totalSpent)} de presupuesto"
+                    } else {
+                        "¡Has superado tu presupuesto mensual!"
+                    }
 
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             usuarioNombre = nombre,
                             ultimasCompras = ultimas,
-                            totalMes = total,
+                            totalMes = totalSpent,
                             ahorroEstimado = ahorroCalculado,
-                            superMasVisitado = superMasFrecuente
+                            superMasVisitado = superMasFrecuente,
+                            budgetMessage = msg
                         )
                     }
                 }

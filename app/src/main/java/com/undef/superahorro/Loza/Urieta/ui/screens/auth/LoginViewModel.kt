@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
@@ -47,6 +48,35 @@ class LoginViewModel(
                     _uiState.update { it.copy(isLoading = false, loginExitoso = true) }
                 } else {
                     _uiState.update { it.copy(isLoading = false, error = "Usuario o contraseña incorrectos") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun iniciarSesionBiometrica() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        viewModelScope.launch {
+            try {
+                val email = settingsRepository.biometricUserEmailFlow.first()
+                val nombre = settingsRepository.biometricUserNameFlow.first()
+                
+                android.util.Log.d("LoginVM", "Intento login biométrico para: $nombre ($email)")
+
+                if (email != null && nombre != null) {
+                    settingsRepository.setLoggedIn(
+                        isLoggedIn = true,
+                        name = nombre,
+                        email = email
+                    )
+                    
+                    // Sincronizamos para recuperar los datos reales de ese usuario
+                    repository.sincronizarDesdeLaNube()
+                    
+                    _uiState.update { it.copy(isLoading = false, loginExitoso = true) }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "No hay usuario vinculado a la biometría") }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

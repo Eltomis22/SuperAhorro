@@ -1,34 +1,23 @@
 package com.undef.superahorro.Loza.Urieta.ui.screens.purchases
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,6 +28,7 @@ import com.undef.superahorro.Loza.Urieta.navigation.Screen
 import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
+import com.undef.superahorro.Loza.Urieta.ui.util.ExportHelper
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -55,7 +45,11 @@ fun HistorialComprasScreen(
     viewModel: HistorialComprasViewModel = viewModel(factory = HistorialComprasViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
     var filtroSelected by remember { mutableIntStateOf(FILTRO_TODOS) }
+    var busquedaTexto by remember { mutableStateOf("") }
+    var precioMinimo by remember { mutableStateOf("") }
 
     val filtros = listOf(
         FILTRO_TODOS to stringResource(R.string.filter_all),
@@ -73,6 +67,7 @@ fun HistorialComprasScreen(
         hoy.format(fmt) to hoy.minusMonths(1).format(fmt)
     }
 
+    // LÓGICA DE FILTRADO AVANZADO
     val agrupadasFiltradas = state.comprasAgrupadas.filter { (mes, _) ->
         when (filtroSelected) {
             FILTRO_ESTE_MES -> mes == prefijoEsteMes
@@ -80,16 +75,35 @@ fun HistorialComprasScreen(
             else -> true
         }
     }.mapValues { (_, compras) ->
-        when (filtroSelected) {
-            FILTRO_CARREFOUR -> compras.filter { it.supermercado == "Carrefour" }
-            FILTRO_COTO -> compras.filter { it.supermercado == "Coto" }
-            else -> compras
+        compras.filter { compra ->
+            val coincideSuper = when (filtroSelected) {
+                FILTRO_CARREFOUR -> compra.supermercado == "Carrefour"
+                FILTRO_COTO -> compra.supermercado == "Coto"
+                else -> true
+            }
+            val coincideBusqueda = compra.supermercado?.contains(busquedaTexto, ignoreCase = true) == true ||
+                                 compra.categoria?.contains(busquedaTexto, ignoreCase = true) == true
+            
+            val pMin = precioMinimo.toDoubleOrNull() ?: 0.0
+            val coincidePrecio = compra.total >= pMin
+
+            coincideSuper && coincideBusqueda && coincidePrecio
         }
     }.filter { it.value.isNotEmpty() }
 
     Scaffold(
         topBar = {
-            SuperTopAppBar(title = stringResource(R.string.history_title))
+            SuperTopAppBar(
+                title = stringResource(R.string.history_title),
+                actions = {
+                    IconButton(onClick = { 
+                        val todas = state.comprasAgrupadas.values.flatten()
+                        ExportHelper.exportarComprasCSV(context, todas) 
+                    }) {
+                        Icon(Icons.Filled.FileDownload, "Exportar CSV")
+                    }
+                }
+            )
         },
         bottomBar = { SuperAhorroBottomBar(navController) }
     ) { padding ->
@@ -97,8 +111,33 @@ fun HistorialComprasScreen(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
+                // BUSCADOR AVANZADO
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = busquedaTexto,
+                        onValueChange = { busquedaTexto = it },
+                        placeholder = { Text("Categoría o Super...", fontSize = 12.sp) },
+                        leadingIcon = { Icon(Icons.Filled.Search, null, modifier = Modifier.size(18.dp)) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    OutlinedTextField(
+                        value = precioMinimo,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) precioMinimo = it },
+                        placeholder = { Text("Mín $", fontSize = 12.sp) },
+                        modifier = Modifier.width(100.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {

@@ -117,7 +117,10 @@ fun HomeScreen(
                 ) {
                     // 1. TARJETA PRINCIPAL (Gasto del mes)
                     item {
-                        PremiumSpendingCard(totalMes = state.totalMes)
+                        PremiumSpendingCard(
+                            totalMes = state.totalMes,
+                            message = state.budgetMessage
+                        )
                     }
 
                     // 2. ACCIONES RÁPIDAS
@@ -139,6 +142,20 @@ fun HomeScreen(
                                 iconColor = ActionStatsIcon,
                                 onClick = { navController.navigate(Screen.Estadisticas.route) }
                             )
+                        }
+                    }
+
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ModernActionCard(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Filled.Storefront,
+                                label = "Comparativa",
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                iconColor = MaterialTheme.colorScheme.tertiary,
+                                onClick = { navController.navigate(Screen.Comparativa.route) }
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
 
@@ -214,7 +231,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun PremiumSpendingCard(totalMes: Double) {
+private fun PremiumSpendingCard(totalMes: Double, message: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -267,7 +284,7 @@ private fun PremiumSpendingCard(totalMes: Double) {
                     fontWeight = FontWeight.Black
                 )
                 Text(
-                    text = stringResource(R.string.home_monthly_hint),
+                    text = message,
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 13.sp
                 )
@@ -356,8 +373,10 @@ private fun ModernActionCard(
             Text(
                 text = label,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                softWrap = false
             )
         }
     }

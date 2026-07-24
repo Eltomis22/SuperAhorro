@@ -16,8 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,6 +43,13 @@ fun SettingsScreen(
     val darkMode by viewModel.darkModeFlow.collectAsStateWithLifecycle()
     val notifications by viewModel.notificationsEnabledFlow.collectAsStateWithLifecycle()
     val biometric by viewModel.biometricEnabledFlow.collectAsStateWithLifecycle()
+    
+    // Identidad del dueño actual de la huella
+    val settingsRepo = com.undef.superahorro.Loza.Urieta.data.SettingsRepository(androidx.compose.ui.platform.LocalContext.current)
+    val biometricOwner by settingsRepo.biometricUserEmailFlow.collectAsStateWithLifecycle(initialValue = null)
+
+    val currentName by viewModel.userNameFlow.collectAsStateWithLifecycle()
+    val currentEmail by viewModel.userEmailFlow.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -88,13 +94,68 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.setNotificationsEnabled(it) }
                 )
             }
-
             item {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                var showReplacementDialog by remember { mutableStateOf(false) }
+
+                if (showReplacementDialog) {
+                    com.undef.superahorro.Loza.Urieta.ui.components.ConfirmDialog(
+                        title = "Reemplazar huella",
+                        message = "La biometría ya está vinculada a $biometricOwner. ¿Deseas vincularla a tu cuenta actual ($currentEmail)?",
+                        confirmText = "Vincular",
+                        onConfirm = {
+                            showReplacementDialog = false
+                            val activity = context as? androidx.fragment.app.FragmentActivity
+                            if (activity != null) {
+                                com.undef.superahorro.Loza.Urieta.ui.util.BiometricHelper.showBiometricPrompt(
+                                    activity = activity,
+                                    onSuccess = { 
+                                        viewModel.setBiometricEnabled(true)
+                                        viewModel.vincularUsuarioBiometria()
+                                        android.widget.Toast.makeText(context, "Biometría vinculada a $currentEmail", android.widget.Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { error ->
+                                        android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        },
+                        onDismiss = { showReplacementDialog = false }
+                    )
+                }
+
                 SwitchRow(
                     title = stringResource(R.string.settings_biometric),
-                    subtitle = stringResource(R.string.settings_biometric_hint),
-                    checked = biometric,
-                    onCheckedChange = { viewModel.setBiometricEnabled(it) }
+                    subtitle = if (biometricOwner != null) 
+                        "Vinculada a: $biometricOwner" 
+                    else 
+                        stringResource(R.string.settings_biometric_hint),
+                    // El interruptor solo se ve ON si el usuario actual es el dueño
+                    checked = biometric && (biometricOwner == currentEmail),
+                    onCheckedChange = { isEnabled ->
+                        if (isEnabled) {
+                            if (biometricOwner != null && biometricOwner != currentEmail) {
+                                showReplacementDialog = true
+                            } else {
+                                val activity = context as? androidx.fragment.app.FragmentActivity
+                                if (activity != null && com.undef.superahorro.Loza.Urieta.ui.util.BiometricHelper.isBiometricAvailable(activity)) {
+                                    com.undef.superahorro.Loza.Urieta.ui.util.BiometricHelper.showBiometricPrompt(
+                                        activity = activity,
+                                        onSuccess = { 
+                                            viewModel.setBiometricEnabled(true)
+                                            viewModel.vincularUsuarioBiometria()
+                                            android.widget.Toast.makeText(context, "Biometría activada", android.widget.Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { error ->
+                                            android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            viewModel.setBiometricEnabled(false)
+                        }
+                    }
                 )
             }
 

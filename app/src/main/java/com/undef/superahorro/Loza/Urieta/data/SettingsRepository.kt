@@ -26,6 +26,8 @@ class SettingsRepository(private val context: Context) {
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_EMAIL = stringPreferencesKey("user_email")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
+        val BIOMETRIC_USER_NAME = stringPreferencesKey("biometric_user_name")
+        val BIOMETRIC_USER_EMAIL = stringPreferencesKey("biometric_user_email")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
@@ -34,6 +36,12 @@ class SettingsRepository(private val context: Context) {
 
     /** Obtiene el email del usuario guardado */
     val userEmailFlow: Flow<String> = context.dataStore.data.map { it[PreferencesKeys.USER_EMAIL] ?: "usuario@email.com" }
+
+    /** Obtiene el nombre del usuario vinculado a la biometría */
+    val biometricUserNameFlow: Flow<String?> = context.dataStore.data.map { it[PreferencesKeys.BIOMETRIC_USER_NAME] }
+
+    /** Obtiene el email del usuario vinculado a la biometría */
+    val biometricUserEmailFlow: Flow<String?> = context.dataStore.data.map { it[PreferencesKeys.BIOMETRIC_USER_EMAIL] }
 
     /** Observa si la biometría está activa */
     val biometricEnabledFlow: Flow<Boolean> = context.dataStore.data.map { it[PreferencesKeys.BIOMETRIC_ENABLED] ?: false }
@@ -117,8 +125,21 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    /** Borra todos los datos (útil para logout) */
+    /** Vincula un usuario específico a la biometría de este dispositivo */
+    suspend fun setBiometricUser(name: String, email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BIOMETRIC_USER_NAME] = name
+            preferences[PreferencesKeys.BIOMETRIC_USER_EMAIL] = email
+        }
+    }
+
+    /** Borra solo los datos de la sesión (útil para logout) */
     suspend fun clearSession() {
-        context.dataStore.edit { it.clear() }
+        context.dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.IS_LOGGED_IN)
+            preferences.remove(PreferencesKeys.USER_NAME)
+            preferences.remove(PreferencesKeys.USER_EMAIL)
+            // NO borramos DARK_MODE ni BIOMETRIC_ENABLED ni BIOMETRIC_USER_* para que persistan
+        }
     }
 }

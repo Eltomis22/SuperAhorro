@@ -1,6 +1,7 @@
-- [x] Actualizar base de datos en Supabase (Tabla presupuestos con email)
-- [x] Implementar endpoints de presupuestos en el Backend
-- [x] Definir modelos y métodos de API en Android
-- [x] Crear pantalla de configuración de presupuestos
-- [x] Integrar atajos en la pantalla de inicio (Home)
-- [ ] Verificar funcionamiento del Algoritmo del Banquero con límites dinámicos
+- [x] Implementar `NotificationHelper.kt` para avisos de presupuesto
+- [x] Implementar `ExportHelper.kt` para exportación a CSV
+- [x] Agregar lógica de `obtenerRankingPrecios` en el Repositorio
+- [x] Actualizar `HistorialComprasScreen` con filtros avanzados y botón de exportar
+- [x] Crear pantalla y ViewModel de Comparativa de Precios
+- [x] Registrar la nueva pantalla en el NavGraph
+- [x] Integrar notificaciones reales en la lógica de compras

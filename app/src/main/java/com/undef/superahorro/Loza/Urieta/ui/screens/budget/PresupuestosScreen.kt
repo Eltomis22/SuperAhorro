@@ -7,8 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -18,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
+import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,6 +86,11 @@ private fun BudgetInputCard(
     monto: Double,
     onValueChange: (Double) -> Unit
 ) {
+    // Texto crudo que permite coma decimal
+    var textValue by remember(monto) { 
+        mutableStateOf(if (monto == 0.0) "" else monto.toString().replace('.', ',')) 
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -94,14 +99,17 @@ private fun BudgetInputCard(
             Text(categoria, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = if (monto == 0.0) "" else monto.toLong().toString(),
-                onValueChange = { 
-                    val valInt = it.toDoubleOrNull() ?: 0.0
-                    onValueChange(valInt)
+                value = textValue,
+                onValueChange = { input ->
+                    if (input.count { it == ',' } <= 1 && input.all { it.isDigit() || it == ',' }) {
+                        textValue = input
+                        onValueChange(input.replace(',', '.').toDoubleOrNull() ?: 0.0)
+                    }
                 },
                 label = { Text("Límite mensual ($)") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                visualTransformation = Formatters.ThousandsSeparatorTransformation(),
                 singleLine = true
             )
         }

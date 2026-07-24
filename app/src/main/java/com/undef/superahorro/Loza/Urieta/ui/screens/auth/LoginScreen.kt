@@ -3,6 +3,7 @@ package com.undef.superahorro.Loza.Urieta.ui.screens.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,9 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +47,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.Loza.Urieta.R
+import com.undef.superahorro.Loza.Urieta.data.SettingsRepository
+import com.undef.superahorro.Loza.Urieta.ui.util.BiometricHelper
+import androidx.fragment.app.FragmentActivity
 
 @Composable
 fun LoginScreen(
@@ -62,6 +69,11 @@ fun LoginScreen(
             onLoginSuccess()
         }
     }
+
+    val context = LocalContext.current
+    val settingsRepo = remember { SettingsRepository(context) }
+    val biometricEnabled by settingsRepo.biometricEnabledFlow.collectAsStateWithLifecycle(initialValue = false)
+    val biometricName by settingsRepo.biometricUserNameFlow.collectAsStateWithLifecycle(initialValue = null)
 
     Column(
         modifier = Modifier
@@ -153,6 +165,35 @@ fun LoginScreen(
                 Text(
                     text = stringResource(R.string.login_button),
                     fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        if (biometricEnabled) {
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = {
+                    val activity = context as? FragmentActivity
+                    if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
+                        BiometricHelper.showBiometricPrompt(
+                            activity = activity,
+                            onSuccess = { viewModel.iniciarSesionBiometrica() },
+                            onError = { error ->
+                                android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Filled.Fingerprint, null)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = if (biometricName != null) "Entrar como $biometricName (Huella)" else "Entrar con Biometría"
                 )
             }
         }

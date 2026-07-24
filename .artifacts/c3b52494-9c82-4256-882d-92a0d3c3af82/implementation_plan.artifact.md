@@ -1,48 +1,47 @@
-# Plan de Implementación - Sincronización de Usuarios y Multiusuario (Cloud Auth)
+# Plan de Implementación - Funciones Opcionales SuperAhorro
 
-Este plan detalla la migración hacia una arquitectura multiusuario real, donde los datos de perfil y compras están vinculados a una cuenta en la nube (Supabase). Esto permite que varios usuarios usen la misma app sin mezclar sus gastos.
+Este plan detalla la implementación de los requisitos opcionales restantes: Notificaciones, Exportación de Datos, Comparativa de Precios y Filtros Avanzados, sin tocar la lógica de IA.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Privacidad de Datos:** A partir de este cambio, cada compra enviada al servidor incluirá el `email` del usuario logueado. En Supabase, solo se podrán ver las compras asociadas a ese email.
+> **Permisos de Notificaciones:** En Android 13+, necesitaremos pedir el permiso `POST_NOTIFICATIONS`.
 >
-> **Migración de Datos:** Las compras que ya están en Supabase quedarán como "huérfanas" (sin email) a menos que las asignemos manualmente a tu usuario de prueba.
+> **Almacenamiento:** Para la exportación a CSV, utilizaremos el almacenamiento interno de la app y un `FileProvider` para compartir el archivo (mail, WhatsApp, etc.), lo cual es más seguro y moderno que pedir permisos de escritura en disco.
 
 ## Proposed Changes
 
-### [Component Name] Backend (Node.js)
+### [Component Name] Utilidades y Helpers
 
-#### [MODIFY] [database.sql](file:///C:/Users/Tomi Losa/AndroidStudioProjects/SuperAhorro-Backend/database.sql)
-- Crear tabla `usuarios_cloud` (id, nombre, email, clave).
-- Modificar tabla `compras` añadiendo la columna `usuario_email` (TEXT).
+#### [NEW] [NotificationHelper.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/util/NotificationHelper.kt)
+- Clase para crear canales de notificación y lanzar avisos cuando se supera un presupuesto.
 
-#### [MODIFY] [server.js](file:///C:/Users/Tomi Losa/AndroidStudioProjects/SuperAhorro-Backend/server.js)
-- Implementar endpoint `POST /api/v1/usuarios/registrar`: Guarda el usuario en Supabase tras validarlo.
-- Implementar endpoint `POST /api/v1/usuarios/login`: Valida las credenciales contra la base de datos cloud.
-- Actualizar `POST /api/v1/compras`: Ahora procesará el campo `usuario_email` enviado desde la app.
-- Actualizar `POST /api/v1/budget/check`: El algoritmo ahora solo sumará los gastos del usuario que hace la consulta.
+#### [NEW] [ExportHelper.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/util/ExportHelper.kt)
+- Lógica para convertir la lista de compras de Room a un archivo `.csv` y compartirlo mediante un `Intent`.
 
-### [Component Name] Android App
+### [Component Name] Pantalla de Historial (Filtros y Exportación)
 
-#### [MODIFY] [SuperAhorroApi.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/remote/SuperAhorroApi.kt)
-- Añadir modelos `AuthRequest` y `AuthResponse`.
-- Definir endpoints `registrarUsuarioCloud` y `loginUsuarioCloud`.
+#### [MODIFY] [HistorialComprasScreen.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/purchases/HistorialComprasScreen.kt)
+- Añadir filtros por Categoría (Comida, Ocio, etc.) y un buscador por rango de precio.
+- Añadir un icono de "Descargar" en la barra superior para activar la exportación a CSV.
 
-#### [MODIFY] [Models.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/model/Models.kt)
-- Añadir campo `usuarioEmail: String` a la data class `Compra`.
+### [Component Name] Comparativa de Precios
 
-#### [MODIFY] [SuperAhorroRepository.kt](file:///C:/Users/Tomi Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/SuperAhorroRepository.kt)
-- Sincronizar el registro local con el registro cloud.
-- Al agregar compras, obtener el email activo desde el `SettingsRepository` para incluirlo en el envío.
+#### [NEW] [ComparativaScreen.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/comparativa/ComparativaScreen.kt)
+- Nueva pantalla que analiza los productos guardados y muestra un ranking de qué supermercado ofrece el mejor precio para cada producto frecuente.
+
+### [Component Name] Repositorio y Lógica
+
+#### [MODIFY] [SuperAhorroRepository.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/SuperAhorroRepository.kt)
+- Añadir un método `obtenerRankingPrecios()` que agrupe productos por nombre y busque el precio mínimo por supermercado.
 
 ## Verification Plan
 
 ### Automated Tests
-- Scripts `curl` para registrar un usuario y luego verificar que sus compras se guardan con su email.
+- No se requieren para esta fase, validación visual y funcional.
 
 ### Manual Verification
-1. Crear una cuenta nueva desde la app.
-2. Verificar en el panel de Supabase que el usuario aparece en la tabla `usuarios_cloud`.
-3. Cargar un gasto de $500.
-4. Verificar que en la tabla `compras` de Supabase, la nueva fila tiene tu email.
+1.  **Filtros:** Entrar al historial y filtrar por "Comida". Verificar que solo salgan esas compras.
+2.  **Exportación:** Tocar el botón de exportar y elegir "Gmail". Verificar que el CSV se adjunte correctamente.
+3.  **Notificaciones:** Cargar una compra que supere el límite de "Ocio". Verificar que llegue el aviso al celular.
+4.  **Comparativa:** Entrar a la nueva pantalla y ver si "Leche" sale con el precio de Coto y Carrefour comparados.

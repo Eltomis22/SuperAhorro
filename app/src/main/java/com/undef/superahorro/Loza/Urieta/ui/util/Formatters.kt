@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
- * Helpers para formatear y parsear montos con separador de miles "punto".
+ * Helpers para formatear y parsear montos.
  */
 object Formatters {
 
@@ -21,58 +21,75 @@ object Formatters {
             val localDate = LocalDate.parse(fecha, dbDateFormatter)
             localDate.format(uiDateFormatter)
         } catch (e: Exception) {
-            fecha // Si falla, devolvemos el original
+            fecha
         }
-    }
-
-    /** Toma sólo dígitos de la entrada y los formatea con punto cada 3 cifras. */
-    fun formatearMiles(input: String): String {
-        val digitos = input.filter { it.isDigit() }
-        if (digitos.isEmpty()) return ""
-        val sinCerosIzq = digitos.trimStart('0').ifEmpty { "0" }
-        val sb = StringBuilder()
-        val len = sinCerosIzq.length
-        for (i in 0 until len) {
-            if (i > 0 && (len - i) % 3 == 0) sb.append('.')
-            sb.append(sinCerosIzq[i])
-        }
-        return sb.toString()
-    }
-
-    /** Inverso: convierte "1.000" -> 1000.0. */
-    fun parsearMiles(formateado: String): Double? {
-        return formateado.replace(".", "").toDoubleOrNull()
-    }
-
-    /** Formatea para mostrar como moneda fija. */
-    fun formatearMoneda(monto: Double): String {
-        val entero = monto.toLong().toString()
-        return "$ ${formatearMiles(entero)}"
     }
 
     /**
-     * Transformación visual para campos de texto de precios.
-     * Permite que el usuario escriba solo números y el punto aparezca visualmente
-     * sin mover el cursor de forma errática.
+     * Formatea un número como moneda sin decimales para la UI general.
+     */
+    fun formatearMoneda(monto: Double): String {
+        val entero = monto.toLong().toString()
+        val sb = StringBuilder()
+        val len = entero.length
+        for (i in 0 until len) {
+            if (i > 0 && (len - i) % 3 == 0) sb.append('.')
+            sb.append(entero[i])
+        }
+        return "$ ${if (sb.isEmpty()) "0" else sb.toString()}"
+    }
+
+    /**
+     * Transformación visual para campos de texto que admiten decimales (con coma).
+     * Muestra puntos de miles mientras el usuario escribe.
      */
     class ThousandsSeparatorTransformation : VisualTransformation {
         override fun filter(text: AnnotatedString): TransformedText {
             val originalText = text.text
             if (originalText.isEmpty()) return TransformedText(text, OffsetMapping.Identity)
 
-            val formattedText = formatearMiles(originalText)
+            // Dividimos en parte entera y decimal
+            val parts = originalText.split(',')
+            val partEntera = parts[0]
+            val partDecimal = if (parts.size > 1) "," + parts[1].take(2) else ""
+
+            // Formatear miles en la parte entera
+            val sb = StringBuilder()
+            val cleanEntera = partEntera.filter { it.isDigit() }
+            val len = cleanEntera.length
+            for (i in 0 until len) {
+                if (i > 0 && (len - i) % 3 == 0) sb.append('.')
+                sb.append(cleanEntera[i])
+            }
+            
+            val formattedText = sb.toString() + partDecimal
 
             val offsetMapping = object : OffsetMapping {
                 override fun originalToTransformed(offset: Int): Int {
                     if (offset <= 0) return 0
-                    val textBeforeCursor = originalText.substring(0, offset)
-                    return formatearMiles(textBeforeCursor).length
+                    val sub = originalText.substring(0, offset.coerceAtMost(originalText.length))
+                    val subParts = sub.split(',')
+                    val subEntera = subParts[0].filter { it.isDigit() }
+                    
+                    // Contamos cuántos puntos de miles agregamos en el substring
+                    var points = 0
+                    val l = subEntera.length
+                    for (i in 0 until l) {
+                        if (i > 0 && (l - i) % 3 == 0) points++
+                    }
+                    
+                    // Si el cursor ya pasó la coma
+                    return if (sub.contains(',')) {
+                        formattedText.indexOf(',') + (sub.length - originalText.indexOf(','))
+                    } else {
+                        subEntera.length + points
+                    }
                 }
 
                 override fun transformedToOriginal(offset: Int): Int {
                     if (offset <= 0) return 0
-                    val formattedBeforeCursor = formattedText.substring(0, offset.coerceAtMost(formattedText.length))
-                    return formattedBeforeCursor.count { it.isDigit() }
+                    val subFormatted = formattedText.substring(0, offset.coerceAtMost(formattedText.length))
+                    return subFormatted.count { it.isDigit() || it == ',' }
                 }
             }
 

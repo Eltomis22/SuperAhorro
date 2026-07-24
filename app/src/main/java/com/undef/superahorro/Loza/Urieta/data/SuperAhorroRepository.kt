@@ -10,6 +10,7 @@ import com.undef.superahorro.Loza.Urieta.data.model.Producto
 import com.undef.superahorro.Loza.Urieta.data.model.User
 import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
 import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
+import com.undef.superahorro.Loza.Urieta.ui.util.NotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -278,6 +279,12 @@ class SuperAhorroRepository(
                     usuarioEmail = userEmail
                 )
             )
+            
+            // Si el estado es inseguro, lanzamos una notificación real si los avisos están activos
+            if (!response.safe && settingsRepository.notificationsEnabledFlow.first()) {
+                NotificationHelper.sendBudgetAlert(context, categoria, response.message)
+            }
+
             Pair(response.safe, response.message)
         } catch (e: Exception) {
             // El texto ahora está en strings.xml, pero como el repositorio no tiene fácil acceso a context, 
@@ -285,5 +292,33 @@ class SuperAhorroRepository(
             // Para mantener consistencia con el resto del repo, dejamos el texto pero avisamos que es fallback.
             Pair(true, "No se pudo verificar el presupuesto (Modo Offline).")
         }
+    }
+
+    /**
+     * Compara los precios de los productos entre diferentes supermercados.
+     * Retorna: Map<NombreProducto, List<Pair<Supermercado, PrecioMínimo>>>
+     */
+    suspend fun obtenerRankingPrecios(): Map<String, List<Pair<String, Double>>> = withContext(Dispatchers.IO) {
+        val email = settingsRepository.userEmailFlow.first()
+        val todosLosProductos = productoDao.obtenerTodosLosProductosSnapshot(email)
+        
+        // Obtenemos las compras para vincular supermercados
+        val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
+        val mapCompras = compras.associate { it.id to (it.supermercado ?: "Desconocido") }
+
+        todosLosProductos
+            .filter { it.nombre != null }
+            .groupBy { it.nombre!! }
+            .mapValues { (_, prods) ->
+                prods.map { p ->
+                    val superName = mapCompras[p.compraId] ?: "Desconocido"
+                    superName to p.precio
+                }
+                .groupBy { it.first } // Agrupamos por supermercado
+                .map { (superName, precios) -> 
+                    superName to precios.minOf { it.second } // Tomamos el precio más bajo de ese super
+                }
+                .sortedBy { it.second } // El más barato primero
+            }
     }
 }

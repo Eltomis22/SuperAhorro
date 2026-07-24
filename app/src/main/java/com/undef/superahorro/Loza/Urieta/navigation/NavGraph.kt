@@ -133,6 +133,12 @@ fun SuperAhorroNavGraph(
             )
         }
 
+        composable(Screen.Comparativa.route) {
+            com.undef.superahorro.Loza.Urieta.ui.screens.comparativa.ComparativaScreen(
+                navController = navController
+            )
+        }
+
         composable(Screen.NuevaCompra.route) {
             NuevaCompraScreen(
                 onBack = { navController.popBackStack() },
