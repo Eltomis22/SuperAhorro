@@ -167,8 +167,24 @@ class SuperAhorroRepository(
             
             // Guardamos cada compra descargada en el Room local
             comprasRemotas.forEach { compraRemota ->
-                compraDao.insertarCompra(compraRemota)
+                // Aseguramos que ningún campo sea nulo antes de meterlo a Room
+                val compraSegura = compraRemota.copy(
+                    fecha = compraRemota.fecha ?: "2026-01-01",
+                    hora = (compraRemota.hora ?: "00:00").take(5),
+                    supermercado = compraRemota.supermercado ?: "Desconocido",
+                    categoria = compraRemota.categoria ?: "Otros",
+                    usuarioEmail = compraRemota.usuarioEmail ?: email
+                )
+                
+                // 1. Guardar la compra
+                compraDao.insertarCompra(compraSegura)
+                
+                // 2. Guardar sus productos si los trajo la nube
+                compraRemota.productos.forEach { prod ->
+                    productoDao.insertarProducto(prod.copy(compraId = compraSegura.id))
+                }
             }
+            Log.d("Repository", "Sincronización total completada: ${comprasRemotas.size} compras recuperadas con sus productos")
             Log.d("Repository", "Sincronización de bajada completada: ${comprasRemotas.size} compras recuperadas")
         } catch (e: Exception) {
             Log.e("Repository", "Error en sincronización de bajada: ${e.message}")

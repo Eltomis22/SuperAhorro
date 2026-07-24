@@ -7,6 +7,7 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.google.gson.annotations.SerializedName
 
 /**
  * Modelos de dominio de la app, ahora convertidos en Entidades de Room.
@@ -36,20 +37,36 @@ data class UserEntity(
 @Entity(tableName = "compras")
 data class Compra(
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("id_local")
     val id: Int = 0,
-    val fecha: String,            // formato yyyy-MM-dd
-    val hora: String,             // formato HH:mm
-    val supermercado: String,
-    val total: Double,
-    val categoria: String = "Otros",
-    val usuarioEmail: String = "", // Nueva columna para multiusuario
+    
+    @SerializedName("fecha")
+    val fecha: String? = null,
+    
+    @SerializedName("hora")
+    val hora: String? = null,
+    
+    @SerializedName("supermercado")
+    val supermercado: String? = null,
+    
+    @SerializedName("total")
+    val total: Double = 0.0,
+    
+    @SerializedName("categoria")
+    val categoria: String? = "Otros",
+    
+    @SerializedName("usuario_email")
+    val usuarioEmail: String? = "",
+    
+    @SerializedName("ticket_imagen_uri")
     val ticketImagenUri: String? = null,
     
     @Ignore
+    @SerializedName("productos")
     val productos: List<Producto> = emptyList()
 ) {
-    // Constructor secundario para Room (ya que ignora 'productos')
-    constructor(id: Int, fecha: String, hora: String, supermercado: String, total: Double, categoria: String, usuarioEmail: String, ticketImagenUri: String?) : 
+    // Constructor secundario para Room
+    constructor(id: Int, fecha: String?, hora: String?, supermercado: String?, total: Double, categoria: String?, usuarioEmail: String?, ticketImagenUri: String?) : 
         this(id, fecha, hora, supermercado, total, categoria, usuarioEmail, ticketImagenUri, emptyList())
 }
 
