@@ -26,7 +26,7 @@ class ListadoComprasViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                // Observamos el Flow real de Room
+                // Observamos el Flow real de Room filtrado por usuario
                 repository.obtenerTodasLasComprasFlow().collect { lista ->
                     _uiState.update { it.copy(isLoading = false, compras = lista) }
                 }

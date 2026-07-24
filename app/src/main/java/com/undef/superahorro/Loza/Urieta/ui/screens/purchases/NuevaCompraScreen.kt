@@ -72,15 +72,16 @@ fun NuevaCompraScreen(
     }
 
     // --- LÓGICA DE CÁMARA MEJORADA ---
-    // Usamos rememberSaveable para que el URI no se pierda al rotar o abrir la cámara
-    var ticketUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    // Guardamos la URI como String para que sea 100% compatible con rememberSaveable
+    var ticketUriString by rememberSaveable { mutableStateOf<String?>(null) }
+    val ticketUri = ticketUriString?.let { Uri.parse(it) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (!success) {
-            // Si el usuario canceló, pero ya teníamos una foto (en edición), no la borramos
-            // Si es nueva y falló, limpiamos el estado
+            // Si falló y no teníamos una foto previa, limpiamos
+            if (state.compraCargada == null) ticketUriString = null
         }
     }
 
@@ -88,14 +89,20 @@ fun NuevaCompraScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // Permiso recién concedido, lanzamos cámara
-            val file = File(
-                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                "ticket_${System.currentTimeMillis()}.jpg"
-            )
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-            ticketUri = uri
-            cameraLauncher.launch(uri)
+            try {
+                val directory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                if (directory == null) {
+                    Toast.makeText(context, "Error: No se pudo acceder al almacenamiento", Toast.LENGTH_SHORT).show()
+                    return@rememberLauncherForActivityResult
+                }
+                
+                val file = File(directory, "ticket_${System.currentTimeMillis()}.jpg")
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                ticketUriString = uri.toString()
+                cameraLauncher.launch(uri)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error al preparar la cámara: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         } else {
             Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
         }
@@ -104,20 +111,22 @@ fun NuevaCompraScreen(
     fun handleCameraClick() {
         val permission = Manifest.permission.CAMERA
         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            // Ya tenemos permiso, generamos archivo y lanzamos
             try {
-                val file = File(
-                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                    "ticket_${System.currentTimeMillis()}.jpg"
-                )
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                ticketUri = uri
+                val directory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                if (directory != null && !directory.exists()) directory.mkdirs()
+                
+                val file = File(directory, "ticket_${System.currentTimeMillis()}.jpg")
+                // AUTORIDAD EN MINÚSCULAS PARA EVITAR CRASHES DEL SISTEMA
+                val authority = "com.undef.superahorro.fileprovider"
+                val uri = FileProvider.getUriForFile(context, authority, file)
+                
+                ticketUriString = uri.toString()
                 cameraLauncher.launch(uri)
             } catch (e: Exception) {
-                Toast.makeText(context, "Error al abrir la cámara: ${e.message}", Toast.LENGTH_LONG).show()
+                android.util.Log.e("CameraError", "Error fatal al abrir camara", e)
+                Toast.makeText(context, "Error al abrir la cámara. Revisa los permisos.", Toast.LENGTH_LONG).show()
             }
         } else {
-            // No tenemos permiso, lo pedimos
             permissionLauncher.launch(permission)
         }
     }
@@ -206,7 +215,7 @@ fun NuevaCompraScreen(
             supermercado = compra.supermercado
             categoria = compra.categoria
             totalRaw = compra.total.toLong().toString()
-            ticketUri = compra.ticketImagenUri?.let { Uri.parse(it) }
+            ticketUriString = compra.ticketImagenUri
         }
     }
 

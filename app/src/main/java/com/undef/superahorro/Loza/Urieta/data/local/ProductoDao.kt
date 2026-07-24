@@ -19,6 +19,10 @@ interface ProductoDao {
     @Query("DELETE FROM productos WHERE id = :id")
     suspend fun eliminarProductoPorId(id: Int)
 
-    @Query("SELECT * FROM productos")
-    suspend fun obtenerTodosLosProductosSnapshot(): List<Producto>
+    @Query("""
+        SELECT p.* FROM productos p 
+        INNER JOIN compras c ON p.compraId = c.id 
+        WHERE c.usuarioEmail = :email
+    """)
+    suspend fun obtenerTodosLosProductosSnapshot(email: String): List<Producto>
 }

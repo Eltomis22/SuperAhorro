@@ -39,6 +39,11 @@ class LoginViewModel(
                         name = usuario.nombre,
                         email = usuario.email
                     )
+                    
+                    // --- SINCRONIZACIÓN DE BAJADA ---
+                    // Descargamos las compras de la nube para que el celular esté al día
+                    repository.sincronizarDesdeLaNube()
+                    
                     _uiState.update { it.copy(isLoading = false, loginExitoso = true) }
                 } else {
                     _uiState.update { it.copy(isLoading = false, error = "Usuario o contraseña incorrectos") }

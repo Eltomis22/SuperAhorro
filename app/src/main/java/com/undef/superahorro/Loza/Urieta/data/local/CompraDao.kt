@@ -11,11 +11,11 @@ interface CompraDao {
 
     // --- COMPRAS ---
 
-    @Query("SELECT * FROM compras ORDER BY fecha DESC, hora DESC")
-    fun obtenerTodasLasCompras(): Flow<List<Compra>>
+    @Query("SELECT * FROM compras WHERE usuarioEmail = :email ORDER BY fecha DESC, hora DESC")
+    fun obtenerTodasLasCompras(email: String): Flow<List<Compra>>
 
-    @Query("SELECT * FROM compras")
-    suspend fun obtenerTodasLasComprasSnapshot(): List<Compra>
+    @Query("SELECT * FROM compras WHERE usuarioEmail = :email")
+    suspend fun obtenerTodasLasComprasSnapshot(email: String): List<Compra>
 
     @Query("SELECT * FROM compras WHERE id = :id")
     suspend fun obtenerCompraPorId(id: Int): Compra?

@@ -23,6 +23,12 @@ interface SuperAhorroApi {
     suspend fun obtenerSupermercados(): List<String>
 
     /**
+     * GET: Obtiene todas las compras sincronizadas del usuario.
+     */
+    @GET("compras")
+    suspend fun obtenerComprasRemotas(@Query("email") email: String): List<Compra>
+
+    /**
      * POST: Sincroniza una compra local con el servidor.
      */
     @POST("compras")

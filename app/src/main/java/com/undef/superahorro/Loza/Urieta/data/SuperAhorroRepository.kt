@@ -77,7 +77,10 @@ class SuperAhorroRepository(
 
     // --- COMPRAS (Lectura) ---
     
-    fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> = compraDao.obtenerTodasLasCompras()
+    suspend fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> {
+        val email = settingsRepository.userEmailFlow.first()
+        return compraDao.obtenerTodasLasCompras(email)
+    }
 
     suspend fun obtenerCompraPorId(id: Int): Compra? = withContext(Dispatchers.IO) {
         compraDao.obtenerCompraPorId(id)
@@ -93,7 +96,8 @@ class SuperAhorroRepository(
     }
 
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
-        val compras = compraDao.obtenerTodasLasComprasSnapshot()
+        val email = settingsRepository.userEmailFlow.first()
+        val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
         if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
         
         compras.groupBy { it.fecha.take(7) }
@@ -103,7 +107,8 @@ class SuperAhorroRepository(
     }
 
     suspend fun obtenerGastoPorSupermercado(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
-        val compras = compraDao.obtenerTodasLasComprasSnapshot()
+        val email = settingsRepository.userEmailFlow.first()
+        val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
         if (compras.isEmpty()) return@withContext emptyList<Pair<String, Double>>()
 
         compras.groupBy { it.supermercado }
@@ -112,7 +117,8 @@ class SuperAhorroRepository(
     }
 
     suspend fun obtenerProductosMasComprados(): List<Pair<String, Int>> = withContext(Dispatchers.IO) {
-        val productos = productoDao.obtenerTodosLosProductosSnapshot()
+        val email = settingsRepository.userEmailFlow.first()
+        val productos = productoDao.obtenerTodosLosProductosSnapshot(email)
         if (productos.isEmpty()) return@withContext emptyList<Pair<String, Int>>()
 
         productos.groupBy { it.nombre }
@@ -146,6 +152,21 @@ class SuperAhorroRepository(
             throw Exception("Error de sincronización: ${response.code()} ${response.message()}")
         }
         Log.d("Repository", "Sincronización exitosa")
+    }
+
+    suspend fun sincronizarDesdeLaNube() = withContext(Dispatchers.IO) {
+        try {
+            val email = settingsRepository.userEmailFlow.first()
+            val comprasRemotas = api.obtenerComprasRemotas(email)
+            
+            // Guardamos cada compra descargada en el Room local
+            comprasRemotas.forEach { compraRemota ->
+                compraDao.insertarCompra(compraRemota)
+            }
+            Log.d("Repository", "Sincronización de bajada completada: ${comprasRemotas.size} compras recuperadas")
+        } catch (e: Exception) {
+            Log.e("Repository", "Error en sincronización de bajada: ${e.message}")
+        }
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
