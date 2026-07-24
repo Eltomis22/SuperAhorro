@@ -1,7 +1,0 @@
-- [x] Implementar `NotificationHelper.kt` para avisos de presupuesto
-- [x] Implementar `ExportHelper.kt` para exportación a CSV
-- [x] Agregar lógica de `obtenerRankingPrecios` en el Repositorio
-- [x] Actualizar `HistorialComprasScreen` con filtros avanzados y botón de exportar
-- [x] Crear pantalla y ViewModel de Comparativa de Precios
-- [x] Registrar la nueva pantalla en el NavGraph
-- [x] Integrar notificaciones reales en la lógica de compras
