@@ -138,7 +138,7 @@
     <string name="forgot_email_sent">We sent an email to %1$s</string>
 
     <!-- Purchase detail (Share intent) -->
-    <string name="share_purchase_text">Purchase at %1$s on %2$s — Total: $%3$s</string>
+    <string name="share_purchase_template">Purchase at %1$s on %2$s\nTotal: %3$s\n\nDetail:\n%4$s\n\nSent from SuperAhorro 🚀</string>
     <string name="share_purchase_chooser">Share purchase</string>
 
     <!-- Home Extras -->

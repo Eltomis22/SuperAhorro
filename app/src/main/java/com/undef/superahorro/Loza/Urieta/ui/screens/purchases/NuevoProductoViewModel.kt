@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class NuevoProductoUiState(
     val isLoading: Boolean = false,
     val guardadoExitoso: Boolean = false,
+    val productoCargado: Producto? = null,
     val error: String? = null
 )
 
@@ -25,7 +26,20 @@ class NuevoProductoViewModel(
     private val _uiState = MutableStateFlow(NuevoProductoUiState())
     val uiState: StateFlow<NuevoProductoUiState> = _uiState.asStateFlow()
 
+    fun cargarProductoParaEditar(productoId: Int) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                val producto = repository.obtenerProductoPorId(productoId)
+                _uiState.update { it.copy(isLoading = false, productoCargado = producto) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
     fun guardarProducto(
+        id: Int = 0, // Si es > 0, es edición
         compraId: Int,
         codigo: String,
         nombre: String,
@@ -36,8 +50,8 @@ class NuevoProductoViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val nuevoProducto = Producto(
-                    id = 0, // Room auto-genera
+                val producto = Producto(
+                    id = id,
                     compraId = compraId,
                     codigo = codigo,
                     nombre = nombre,
@@ -45,7 +59,7 @@ class NuevoProductoViewModel(
                     cantidad = cantidad,
                     precio = precio
                 )
-                repository.agregarProducto(compraId, nuevoProducto)
+                repository.agregarProducto(compraId, producto)
                 _uiState.update { it.copy(isLoading = false, guardadoExitoso = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

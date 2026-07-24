@@ -192,6 +192,33 @@ class SuperAhorroRepository(
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
         productoDao.insertarProducto(producto.copy(compraId = compraId))
+        // Refrescamos la compra entera en la nube para incluir el nuevo producto
+        val compra = compraDao.obtenerCompraPorId(compraId)
+        compra?.let {
+            val productos = productoDao.obtenerTodosLosProductosSnapshot(it.usuarioEmail ?: "")
+                .filter { p -> p.compraId == it.id }
+            sincronizarConServidor(it.apply { this.productos = productos })
+        }
+    }
+
+    suspend fun obtenerProductoPorId(id: Int): Producto? = withContext(Dispatchers.IO) {
+        productoDao.obtenerProductoPorId(id)
+    }
+
+    suspend fun eliminarProducto(id: Int) = withContext(Dispatchers.IO) {
+        val prod = productoDao.obtenerProductoPorId(id)
+        val compraId = prod?.compraId
+        productoDao.eliminarProductoPorId(id)
+        
+        // Refrescamos la compra en la nube tras borrar el producto
+        compraId?.let { cid ->
+            val compra = compraDao.obtenerCompraPorId(cid)
+            compra?.let {
+                val productos = productoDao.obtenerTodosLosProductosSnapshot(it.usuarioEmail ?: "")
+                    .filter { p -> p.compraId == it.id }
+                sincronizarConServidor(it.apply { this.productos = productos })
+            }
+        }
     }
 
     suspend fun consultarIA(mensaje: String): String = withContext(Dispatchers.IO) {

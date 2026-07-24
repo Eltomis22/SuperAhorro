@@ -84,6 +84,7 @@ dependencies {
     // Biometría y Fragment (Fase 3 - Entrega Final)
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
     implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Testing
     testImplementation(libs.junit)

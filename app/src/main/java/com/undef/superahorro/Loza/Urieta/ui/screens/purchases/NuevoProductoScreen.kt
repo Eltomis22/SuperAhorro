@@ -47,11 +47,18 @@ import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 @Composable
 fun NuevoProductoScreen(
     compraId: Int,
+    productoIdParaEditar: Int? = null,
     onBack: () -> Unit,
     onProductoGuardado: () -> Unit,
     viewModel: NuevoProductoViewModel = viewModel(factory = NuevoProductoViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(productoIdParaEditar) {
+        productoIdParaEditar?.let {
+            viewModel.cargarProductoParaEditar(it)
+        }
+    }
 
     LaunchedEffect(state.guardadoExitoso) {
         if (state.guardadoExitoso) {
@@ -63,14 +70,24 @@ fun NuevoProductoScreen(
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("1") }
-    
-    // Cambiamos a 'precioRaw' para evitar saltos del cursor
     var precioRaw by remember { mutableStateOf("") }
+
+    LaunchedEffect(state.productoCargado) {
+        state.productoCargado?.let { prod ->
+            codigo = prod.codigo ?: ""
+            nombre = prod.nombre ?: ""
+            descripcion = prod.descripcion ?: ""
+            cantidad = prod.cantidad.toString()
+            precioRaw = prod.precio.toString().replace('.', ',')
+        }
+    }
+
+    val esEdicion = productoIdParaEditar != null
 
     Scaffold(
         topBar = {
             SuperTopAppBar(
-                title = stringResource(R.string.new_product_title),
+                title = stringResource(if (esEdicion) R.string.action_save else R.string.new_product_title),
                 onBack = onBack
             )
         }
@@ -169,6 +186,7 @@ fun NuevoProductoScreen(
                 Button(
                     onClick = {
                         viewModel.guardarProducto(
+                            id = productoIdParaEditar ?: 0,
                             compraId = compraId,
                             codigo = codigo.ifBlank { "—" },
                             nombre = nombre,

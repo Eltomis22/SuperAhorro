@@ -153,7 +153,7 @@
     <string name="forgot_email_sent">Te enviamos un email a %1$s</string>
 
     <!-- Detalle de compra (Intent compartir) -->
-    <string name="share_purchase_text">Compra en %1$s el %2$s — Total: $%3$s</string>
+    <string name="share_purchase_template">Compra en %1$s el %2$s\nTotal: %3$s\n\nDetalle:\n%4$s\n\nEnviado desde SuperAhorro 🚀</string>
     <string name="share_purchase_chooser">Compartir compra</string>
 
     <!-- Home Extras -->

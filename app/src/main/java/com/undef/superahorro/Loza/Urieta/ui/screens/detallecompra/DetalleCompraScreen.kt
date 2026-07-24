@@ -30,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,8 +74,7 @@ fun DetalleCompraScreen(
     }
 
     val context = LocalContext.current
-    // Obtenemos los textos traducidos desde strings.xml
-    val shareTemplate = stringResource(R.string.share_purchase_text)
+    val shareTemplate = stringResource(R.string.share_purchase_template)
     val shareChooserTitle = stringResource(R.string.share_purchase_chooser)
 
     Scaffold(
@@ -87,13 +87,22 @@ fun DetalleCompraScreen(
                     }
                 },
                 actions = {
-                    // BOTÓN COMPARTIR (REQUISITO INTENTS)
                     state.compra?.let { compra ->
                         IconButton(onClick = {
+                            // Construimos la lista de productos para el mensaje
+                            val productosTexto = if (compra.productos.isEmpty()) {
+                                "- Sin productos registrados"
+                            } else {
+                                compra.productos.take(5).joinToString("\n") { 
+                                    "- ${it.nombre}${if (!it.descripcion.isNullOrBlank()) ": ${it.descripcion}" else ""} (x${it.cantidad})" 
+                                } + if (compra.productos.size > 5) "\n...y otros más" else ""
+                            }
+
                             val texto = shareTemplate.format(
                                 compra.supermercado ?: "Super",
                                 Formatters.formatearFecha(compra.fecha ?: ""),
-                                "%,.0f".format(compra.total)
+                                Formatters.formatearMoneda(compra.total),
+                                productosTexto
                             )
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
@@ -112,7 +121,6 @@ fun DetalleCompraScreen(
                         Icon(Icons.Filled.Edit, null)
                     }
 
-                    // DIÁLOGO DE CONFIRMACIÓN
                     var showDeleteDialog by remember { mutableStateOf(false) }
 
                     IconButton(onClick = { showDeleteDialog = true }) {
@@ -208,7 +216,7 @@ fun DetalleCompraScreen(
                                     fontSize = 12.sp
                                 )
                                 Text(
-                                    text = "$ %,.0f".format(compra.total),
+                                    text = Formatters.formatearMoneda(compra.total),
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 30.sp,
                                     fontWeight = FontWeight.Bold
@@ -217,63 +225,61 @@ fun DetalleCompraScreen(
                         }
                     }
 
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp)
-                                .clickable {
-                                    compra.ticketImagenUri?.let { uriString ->
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                setDataAndType(Uri.parse(uriString), "image/*")
-                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                            }
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            // Si no hay visor de imágenes o falla
-                                        }
-                                    }
-                                },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (compra.ticketImagenUri != null) 
-                                    MaterialTheme.colorScheme.primaryContainer 
-                                else 
-                                    MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-                            Row(
+                    if (compra.ticketImagenUri != null) {
+                        item {
+                            Card(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .clickable {
+                                        compra.ticketImagenUri?.let { uriString ->
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    setDataAndType(Uri.parse(uriString), "image/*")
+                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                }
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                            }
+                                        }
+                                    },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer 
+                                )
                             ) {
-                                Box(
+                                Row(
                                     modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        Icons.Filled.Image,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                }
-                                Spacer(Modifier.size(12.dp))
-                                Column {
-                                    Text(
-                                        text = stringResource(R.string.purchase_detail_ticket),
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.purchase_detail_ticket_hint),
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                                        fontSize = 12.sp
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(64.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.primary),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.Image,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+                                    Spacer(Modifier.size(12.dp))
+                                    Column {
+                                        Text(
+                                            text = stringResource(R.string.purchase_detail_ticket),
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.purchase_detail_ticket_hint),
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                                            fontSize = 12.sp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -297,7 +303,13 @@ fun DetalleCompraScreen(
                         }
                     } else {
                         items(compra.productos, key = { it.id }) { producto ->
-                            ProductoItemCard(producto)
+                            ProductoItemCard(
+                                producto = producto,
+                                onEdit = { 
+                                    navController.navigate(Screen.EditarProducto.createRoute(compra.id, it)) 
+                                },
+                                onDelete = { viewModel.eliminarProducto(it) }
+                            )
                         }
                     }
                 }
@@ -307,7 +319,11 @@ fun DetalleCompraScreen(
 }
 
 @Composable
-private fun ProductoItemCard(producto: Producto) {
+private fun ProductoItemCard(
+    producto: Producto,
+    onEdit: (Int) -> Unit,
+    onDelete: (Int) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -321,7 +337,7 @@ private fun ProductoItemCard(producto: Producto) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(producto.nombre ?: "Sin nombre", fontWeight = FontWeight.SemiBold)
+                Text(producto.nombre ?: "Sin nombre", fontWeight = FontWeight.Bold)
                 Text(
                     producto.descripcion ?: "",
                     fontSize = 12.sp,
@@ -333,14 +349,23 @@ private fun ProductoItemCard(producto: Producto) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            
             Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { onEdit(producto.id) }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Filled.Edit, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = { onDelete(producto.id) }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Filled.Delete, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error)
+                    }
+                }
                 Text(
                     "x${producto.cantidad}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "$ %,.0f".format(producto.subtotal),
+                    Formatters.formatearMoneda(producto.subtotal),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )

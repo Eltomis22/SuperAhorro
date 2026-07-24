@@ -50,6 +50,16 @@ class DetalleCompraViewModel(
         }
     }
 
+    fun eliminarProducto(productoId: Int) {
+        viewModelScope.launch {
+            try {
+                repository.eliminarProducto(productoId)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

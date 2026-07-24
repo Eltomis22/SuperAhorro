@@ -82,12 +82,13 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo / Icono
+        // Logo / Icono (Círculo blanco + Carrito verde)
+        // Usamos Icon con tint Unspecified para que se vean los colores reales del XML
         Icon(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = null,
-            modifier = Modifier.size(100.dp),
-            tint = MaterialTheme.colorScheme.primary
+            modifier = Modifier.size(120.dp),
+            tint = androidx.compose.ui.graphics.Color.Unspecified
         )
 
         Text(

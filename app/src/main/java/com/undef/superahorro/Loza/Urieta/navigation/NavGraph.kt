@@ -171,9 +171,26 @@ fun SuperAhorroNavGraph(
                 compraId = compraId,
                 onBack = { navController.popBackStack() },
                 onProductoGuardado = {
-                    navController.navigate(Screen.DetalleCompra.createRoute(compraId)) {
-                        popUpTo(Screen.Home.route)
-                    }
+                    navController.popBackStack() // Volvemos al detalle
+                }
+            )
+        }
+
+        composable(
+            route = Screen.EditarProducto.route,
+            arguments = listOf(
+                navArgument("compraId") { type = NavType.IntType },
+                navArgument("productoId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val compraId = backStackEntry.arguments?.getInt("compraId") ?: 0
+            val productoId = backStackEntry.arguments?.getInt("productoId") ?: 0
+            NuevoProductoScreen(
+                compraId = compraId,
+                productoIdParaEditar = productoId,
+                onBack = { navController.popBackStack() },
+                onProductoGuardado = {
+                    navController.popBackStack()
                 }
             )
         }

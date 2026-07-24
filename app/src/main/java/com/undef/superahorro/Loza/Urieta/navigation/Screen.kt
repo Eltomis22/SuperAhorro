@@ -17,6 +17,9 @@ sealed class Screen(val route: String) {
     object NuevoProducto : Screen("nuevo_producto/{compraId}") {
         fun createRoute(compraId: Int) = "nuevo_producto/$compraId"
     }
+    object EditarProducto : Screen("editar_producto/{compraId}/{productoId}") {
+        fun createRoute(compraId: Int, productoId: Int) = "editar_producto/$compraId/$productoId"
+    }
     object ListadoCompras : Screen("listado_compras")
     object DetalleCompra : Screen("detalle_compra/{compraId}") {
         fun createRoute(compraId: Int) = "detalle_compra/$compraId"

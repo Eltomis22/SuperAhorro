@@ -10,6 +10,9 @@ interface ProductoDao {
     @Query("SELECT * FROM productos WHERE compraId = :compraId")
     fun obtenerProductosDeCompra(compraId: Int): Flow<List<Producto>>
 
+    @Query("SELECT * FROM productos WHERE id = :id")
+    suspend fun obtenerProductoPorId(id: Int): Producto?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarProducto(producto: Producto): Long
 
