@@ -1,15 +1,9 @@
 package com.undef.superahorro.Loza.Urieta.data
 
 import android.util.Log
-import com.undef.superahorro.Loza.Urieta.data.local.CompraDao
-import com.undef.superahorro.Loza.Urieta.data.local.ProductoDao
-import com.undef.superahorro.Loza.Urieta.data.local.UserDao
-import com.undef.superahorro.Loza.Urieta.data.model.Compra
-import com.undef.superahorro.Loza.Urieta.data.model.CompraConProductos
-import com.undef.superahorro.Loza.Urieta.data.model.Producto
-import com.undef.superahorro.Loza.Urieta.data.model.User
-import com.undef.superahorro.Loza.Urieta.data.model.UserEntity
-import com.undef.superahorro.Loza.Urieta.data.remote.SuperAhorroApi
+import com.undef.superahorro.Loza.Urieta.data.local.*
+import com.undef.superahorro.Loza.Urieta.data.model.*
+import com.undef.superahorro.Loza.Urieta.data.remote.*
 import com.undef.superahorro.Loza.Urieta.ui.util.NotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +16,7 @@ class SuperAhorroRepository(
     private val compraDao: CompraDao,
     private val productoDao: ProductoDao,
     private val userDao: UserDao,
+    private val supermercadoDao: SupermercadoDao,
     private val api: SuperAhorroApi,
     private val settingsRepository: SettingsRepository
 ) {
@@ -29,38 +24,26 @@ class SuperAhorroRepository(
     // --- SESIÓN Y USUARIOS ---
 
     suspend fun registrarUsuario(nombre: String, email: String, clave: String) = withContext(Dispatchers.IO) {
-        // 1. Local
         val entity = UserEntity(nombre = nombre, email = email, clave = clave)
         userDao.insertarUsuario(entity)
-        
-        // 2. Cloud
         try {
-            api.registrarUsuarioCloud(com.undef.superahorro.Loza.Urieta.data.remote.AuthRequest(email, clave, nombre))
-        } catch (_: Exception) {
-            // Error de red ignorado para permitir registro offline
-        }
+            api.registrarUsuarioCloud(AuthRequest(email, clave, nombre))
+        } catch (_: Exception) {}
     }
 
-    suspend fun validarCredenciales(email: String, clave: String): User? = withContext(Dispatchers.IO) {
-        // 1. Intentamos Local primero para rapidez
+    suspend fun validarCredenciales(email: String, clave: String): com.undef.superahorro.Loza.Urieta.data.model.User? = withContext(Dispatchers.IO) {
         val entity = userDao.obtenerUsuarioPorEmail(email)
         if (entity != null && entity.clave == clave) {
-            return@withContext User(id = entity.id, nombre = entity.nombre, email = entity.email)
+            return@withContext com.undef.superahorro.Loza.Urieta.data.model.User(id = entity.id, nombre = entity.nombre, email = entity.email)
         }
-        
-        // 2. Si no está local, probamos en la nube
         try {
-            val response = api.loginUsuarioCloud(com.undef.superahorro.Loza.Urieta.data.remote.AuthRequest(email, clave))
+            val response = api.loginUsuarioCloud(AuthRequest(email, clave))
             if (response.isSuccessful && response.body()?.success == true) {
                 val cloudUser = response.body()!!.user!!
-                // Guardamos local para la próxima
                 userDao.insertarUsuario(UserEntity(nombre = cloudUser.nombre, email = cloudUser.email, clave = clave))
-                return@withContext User(id = 0, nombre = cloudUser.nombre, email = cloudUser.email)
+                return@withContext com.undef.superahorro.Loza.Urieta.data.model.User(id = 0, nombre = cloudUser.nombre, email = cloudUser.email)
             }
-        } catch (e: Exception) {
-            Log.e("Repository", "Error en login cloud: ${e.message}")
-        }
-        
+        } catch (_: Exception) {}
         null
     }
 
@@ -79,7 +62,6 @@ class SuperAhorroRepository(
     suspend fun limpiarDatosLocales() = withContext(Dispatchers.IO) {
         compraDao.eliminarTodasLasCompras()
         userDao.eliminarTodosLosUsuarios()
-        // Nota: Los productos se borran por cascada al borrar las compras
     }
 
     // --- COMPRAS (Lectura) ---
@@ -99,7 +81,16 @@ class SuperAhorroRepository(
     // --- DROPDOWNS Y NETWORKING (GET) ---
 
     suspend fun obtenerSupermercados(): List<String> = withContext(Dispatchers.IO) {
-        api.obtenerSupermercados()
+        val cache = supermercadoDao.obtenerTodos()
+        try {
+            val remotos = api.obtenerSupermercados()
+            if (remotos.isNotEmpty()) {
+                supermercadoDao.limpiarCache()
+                supermercadoDao.insertarVarios(remotos.map { SupermercadoEntity(it) })
+                return@withContext remotos
+            }
+        } catch (_: Exception) {}
+        cache.ifEmpty { listOf("Carrefour", "Coto", "Día%", "Vea") }
     }
 
     suspend fun obtenerGastoMensual(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
@@ -139,7 +130,6 @@ class SuperAhorroRepository(
     suspend fun agregarCompra(compra: Compra): Long = withContext(Dispatchers.IO) {
         val userEmail = settingsRepository.userEmailFlow.first()
         val compraConUser = compra.copy(usuarioEmail = userEmail)
-        
         val id = compraDao.insertarCompra(compraConUser)
         sincronizarConServidor(compraConUser.copy(id = id.toInt()))
         id
@@ -148,27 +138,24 @@ class SuperAhorroRepository(
     suspend fun actualizarCompra(compra: Compra) = withContext(Dispatchers.IO) {
         val userEmail = settingsRepository.userEmailFlow.first()
         val compraConUser = compra.copy(usuarioEmail = userEmail)
-        
         compraDao.actualizarCompra(compraConUser)
         sincronizarConServidor(compraConUser)
     }
 
     private suspend fun sincronizarConServidor(compra: Compra) {
-        val response = api.sincronizarCompra(compra)
-        if (!response.isSuccessful) {
-            throw Exception("Error de sincronización: ${response.code()} ${response.message()}")
+        try {
+            val response = api.sincronizarCompra(compra)
+            if (!response.isSuccessful) Log.e("Repository", "Error Sync: ${response.code()}")
+        } catch (e: Exception) {
+            Log.e("Repository", "Fallo red Sync: ${e.message}")
         }
-        Log.d("Repository", "Sincronización exitosa")
     }
 
     suspend fun sincronizarDesdeLaNube() = withContext(Dispatchers.IO) {
         try {
             val email = settingsRepository.userEmailFlow.first()
             val comprasRemotas = api.obtenerComprasRemotas(email)
-            
-            // Guardamos cada compra descargada en el Room local
             comprasRemotas.forEach { compraRemota ->
-                // Aseguramos que ningún campo sea nulo antes de meterlo a Room
                 val compraSegura = compraRemota.copy(
                     fecha = compraRemota.fecha ?: "2026-01-01",
                     hora = (compraRemota.hora ?: "00:00").take(5),
@@ -176,133 +163,75 @@ class SuperAhorroRepository(
                     categoria = compraRemota.categoria ?: "Otros",
                     usuarioEmail = compraRemota.usuarioEmail ?: email
                 )
-                
-                // 1. Guardar la compra y obtener el ID real generado por Room
                 val nuevoIdGenerado = compraDao.insertarCompra(compraSegura).toInt()
-                
-                // 2. Guardar sus productos vinculándolos al ID correcto del celular
                 compraRemota.productos.forEach { prod ->
                     productoDao.insertarProducto(prod.copy(compraId = nuevoIdGenerado))
                 }
             }
-            Log.d("Repository", "Sincronización total completada: ${comprasRemotas.size} compras recuperadas con sus productos")
-            Log.d("Repository", "Sincronización de bajada completada: ${comprasRemotas.size} compras recuperadas")
-        } catch (e: Exception) {
-            Log.e("Repository", "Error en sincronización de bajada: ${e.message}")
-        }
+        } catch (_: Exception) {}
     }
 
     suspend fun eliminarCompra(compraId: Int) = withContext(Dispatchers.IO) {
-        // 1. Obtener la compra para ver si tiene ticket
         val compra = compraDao.obtenerCompraPorId(compraId)
-        
-        // 2. Si tiene ticket, intentar borrar el archivo físico para liberar espacio
         compra?.ticketImagenUri?.let { uriString ->
             try {
-                // Forma segura de obtener el archivo desde una URI de FileProvider
-                // Solo si la URI es local (empieza con content:// o file://)
                 val uri = android.net.Uri.parse(uriString)
                 if (uri.scheme == "file") {
                     val file = File(uri.path ?: "")
                     if (file.exists()) file.delete()
                 } else if (uri.scheme == "content") {
-                    // Para URIs de tipo content (FileProvider), borrar el archivo real
-                    // que reside en la carpeta Pictures de la app.
-                    val fileName = uri.lastPathSegment // ej: my_images/ticket_123.jpg
-                    fileName?.split("/")?.last()?.let { nameOnly ->
-                        val file = File(context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), nameOnly)
-                        if (file.exists()) {
-                            file.delete()
-                            Log.d("Repository", "Archivo de ticket eliminado: $nameOnly")
-                        }
-                    }
+                    val fileName = uri.lastPathSegment?.split("/")?.last()
+                    val file = File(context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), fileName ?: "")
+                    if (file.exists()) file.delete()
                 }
-            } catch (_: Exception) {
-                // Error ignorado silenciosamente durante el borrado físico
-            }
+            } catch (_: Exception) {}
         }
-
-        // 3. Borrar de la base de datos local (Room borrará productos por cascada)
         compraDao.eliminarCompraPorId(compraId)
-
-        // 4. Avisar al servidor para sincronizar el borrado
-        try {
-            api.eliminarCompraRemota(compraId)
-        } catch (e: Exception) {
-            Log.e("Repository", "Error al eliminar en la nube: ${e.message}")
-        }
+        try { api.eliminarCompraRemota(compraId) } catch (_: Exception) {}
     }
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) = withContext(Dispatchers.IO) {
         productoDao.insertarProducto(producto.copy(compraId = compraId))
     }
 
-    // --- CHAT CON IA (Vía Backend) ---
-
     suspend fun consultarIA(mensaje: String): String = withContext(Dispatchers.IO) {
         try {
-            val response = api.enviarMensajeChat(com.undef.superahorro.Loza.Urieta.data.remote.ChatRequest(mensaje))
-            response.response
+            api.enviarMensajeChat(ChatRequest(mensaje)).response
         } catch (e: Exception) {
             "Error al consultar al servidor: ${e.message}"
         }
     }
 
-    // --- ALGORITMO DEL BANQUERO ---
-
-    suspend fun obtenerMisPresupuestos(): List<com.undef.superahorro.Loza.Urieta.data.remote.BudgetLimit> = withContext(Dispatchers.IO) {
+    suspend fun obtenerMisPresupuestos(): List<BudgetLimit> = withContext(Dispatchers.IO) {
         try {
             val email = settingsRepository.userEmailFlow.first()
             api.obtenerPresupuestos(email)
-        } catch (e: Exception) {
-            emptyList()
-        }
+        } catch (_: Exception) { emptyList() }
     }
 
-    suspend fun guardarMisPresupuestos(lista: List<com.undef.superahorro.Loza.Urieta.data.remote.BudgetLimit>) = withContext(Dispatchers.IO) {
+    suspend fun guardarMisPresupuestos(lista: List<BudgetLimit>) = withContext(Dispatchers.IO) {
         try {
             val email = settingsRepository.userEmailFlow.first()
-            api.guardarPresupuestos(com.undef.superahorro.Loza.Urieta.data.remote.SaveBudgetRequest(email, lista))
-        } catch (e: Exception) {
-            Log.e("Repository", "Error al guardar presupuestos: ${e.message}")
-        }
+            api.guardarPresupuestos(SaveBudgetRequest(email, lista))
+        } catch (_: Exception) {}
     }
 
     suspend fun verificarPresupuesto(categoria: String, monto: Double): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         try {
             val userEmail = settingsRepository.userEmailFlow.first()
-            val response = api.verificarGastoSeguro(
-                com.undef.superahorro.Loza.Urieta.data.remote.BudgetCheckRequest(
-                    categoria = categoria, 
-                    montoSolicitado = monto,
-                    presupuestoTotal = null, // Podríamos permitir configurarlo en el futuro
-                    usuarioEmail = userEmail
-                )
-            )
-            
-            // Si el estado es inseguro, lanzamos una notificación real si los avisos están activos
+            val response = api.verificarGastoSeguro(BudgetCheckRequest(categoria, monto, null, userEmail))
             if (!response.safe && settingsRepository.notificationsEnabledFlow.first()) {
                 NotificationHelper.sendBudgetAlert(context, categoria, response.message)
             }
-
             Pair(response.safe, response.message)
         } catch (e: Exception) {
-            // El texto ahora está en strings.xml, pero como el repositorio no tiene fácil acceso a context, 
-            // lo ideal es que el ViewModel maneje el texto o pasarle un default y que la UI lo traduzca.
-            // Para mantener consistencia con el resto del repo, dejamos el texto pero avisamos que es fallback.
             Pair(true, "No se pudo verificar el presupuesto (Modo Offline).")
         }
     }
 
-    /**
-     * Compara los precios de los productos entre diferentes supermercados.
-     * Retorna: Map<NombreProducto, List<Pair<Supermercado, PrecioMínimo>>>
-     */
     suspend fun obtenerRankingPrecios(): Map<String, List<Pair<String, Double>>> = withContext(Dispatchers.IO) {
         val email = settingsRepository.userEmailFlow.first()
         val todosLosProductos = productoDao.obtenerTodosLosProductosSnapshot(email)
-        
-        // Obtenemos las compras para vincular supermercados
         val compras = compraDao.obtenerTodasLasComprasSnapshot(email)
         val mapCompras = compras.associate { it.id to (it.supermercado ?: "Desconocido") }
 
@@ -310,15 +239,10 @@ class SuperAhorroRepository(
             .filter { it.nombre != null }
             .groupBy { it.nombre!! }
             .mapValues { (_, prods) ->
-                prods.map { p ->
-                    val superName = mapCompras[p.compraId] ?: "Desconocido"
-                    superName to p.precio
-                }
-                .groupBy { it.first } // Agrupamos por supermercado
-                .map { (superName, precios) -> 
-                    superName to precios.minOf { it.second } // Tomamos el precio más bajo de ese super
-                }
-                .sortedBy { it.second } // El más barato primero
+                prods.map { p -> (mapCompras[p.compraId] ?: "Desconocido") to p.precio }
+                .groupBy { it.first }
+                .map { (name, list) -> name to list.minOf { it.second } }
+                .sortedBy { it.second }
             }
     }
 }

@@ -1,47 +1,50 @@
-# Plan de Implementación - Funciones Opcionales SuperAhorro
+# Plan de Implementación - Auditoría Técnica y Refactorización Final
 
-Este plan detalla la implementación de los requisitos opcionales restantes: Notificaciones, Exportación de Datos, Comparativa de Precios y Filtros Avanzados, sin tocar la lógica de IA.
+Este plan aborda las observaciones del profesor sobre la arquitectura (Room + Retrofit), la eliminación de textos hardcodeados y la fragmentación de archivos largos. Además, resuelve los problemas visuales y de entrada de datos (decimales) reportados.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Permisos de Notificaciones:** En Android 13+, necesitaremos pedir el permiso `POST_NOTIFICATIONS`.
+> **Arquitectura Single Source of Truth:** Migraremos la lista de supermercados para que use Room como caché. La UI ahora siempre leerá del repositorio, y este decidirá si refrescar desde la nube o usar lo que tiene en el teléfono.
 >
-> **Almacenamiento:** Para la exportación a CSV, utilizaremos el almacenamiento interno de la app y un `FileProvider` para compartir el archivo (mail, WhatsApp, etc.), lo cual es más seguro y moderno que pedir permisos de escritura en disco.
+> **Refactorización de Pantallas:** Dividiremos `NuevaCompraScreen.kt` y `HomeScreen.kt` en varios archivos más pequeños para cumplir con el límite de líneas sugerido por la cátedra.
 
 ## Proposed Changes
 
-### [Component Name] Utilidades y Helpers
+### [Component Name] Persistencia y Datos (Cumplimiento Bloque 1)
 
-#### [NEW] [NotificationHelper.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/util/NotificationHelper.kt)
-- Clase para crear canales de notificación y lanzar avisos cuando se supera un presupuesto.
+#### [NEW] [SupermercadoEntity.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/model/SupermercadoEntity.kt)
+- Entidad para cachear la lista de supermercados sugeridos.
 
-#### [NEW] [ExportHelper.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/util/ExportHelper.kt)
-- Lógica para convertir la lista de compras de Room a un archivo `.csv` y compartirlo mediante un `Intent`.
-
-### [Component Name] Pantalla de Historial (Filtros y Exportación)
-
-#### [MODIFY] [HistorialComprasScreen.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/purchases/HistorialComprasScreen.kt)
-- Añadir filtros por Categoría (Comida, Ocio, etc.) y un buscador por rango de precio.
-- Añadir un icono de "Descargar" en la barra superior para activar la exportación a CSV.
-
-### [Component Name] Comparativa de Precios
-
-#### [NEW] [ComparativaScreen.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/comparativa/ComparativaScreen.kt)
-- Nueva pantalla que analiza los productos guardados y muestra un ranking de qué supermercado ofrece el mejor precio para cada producto frecuente.
-
-### [Component Name] Repositorio y Lógica
+#### [NEW] [SupermercadoDao.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/local/SupermercadoDao.kt)
+- Métodos para insertar y obtener supermercados de Room.
 
 #### [MODIFY] [SuperAhorroRepository.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/data/SuperAhorroRepository.kt)
-- Añadir un método `obtenerRankingPrecios()` que agrupe productos por nombre y busque el precio mínimo por supermercado.
+- Cambiar `obtenerSupermercados()`: Primero devuelve lo que hay en Room, luego descarga de la API en segundo plano y actualiza la DB local.
+
+### [Component Name] Refactorización de Interfaz (Cumplimiento Bloque 3)
+
+#### [NEW] [HomeComponents.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/home/HomeComponents.kt)
+- Extraer `PremiumSpendingCard`, `ModernActionCard` e `InfoMiniCard` para reducir el tamaño de `HomeScreen.kt`.
+
+#### [NEW] [NuevaCompraComponents.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/purchases/NuevaCompraComponents.kt)
+- Extraer la lógica de la cámara y los campos de formulario para reducir `NuevaCompraScreen.kt` a menos de 200 líneas.
+
+### [Component Name] Correcciones de UI/UX y I18n (Cumplimiento Bloque 2)
+
+#### [MODIFY] [HomeScreen.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/screens/home/HomeScreen.kt)
+- **Fix Texto Cortado:** Ajustar el peso y tamaño de fuente en las tarjetas de acceso rápido.
+- **Mensaje Dinámico:** Vincular el mensaje de la tarjeta principal al estado del presupuesto real del usuario.
+
+#### [MODIFY] [Formatters.kt](file:///C:/Users/Tomi%20Losa/AndroidStudioProjects/Trabajo%20Integrador/app/src/main/java/com/undef/superahorro/Loza/Urieta/ui/util/Formatters.kt)
+- Corregir la `ThousandsSeparatorTransformation` para que soporte la entrada de decimales con coma sin perder la posición del cursor.
 
 ## Verification Plan
 
 ### Automated Tests
-- No se requieren para esta fase, validación visual y funcional.
+- Ejecutar `clean assembleDebug` para asegurar que el procesador KSP (Room) acepte las nuevas entidades.
 
 ### Manual Verification
-1.  **Filtros:** Entrar al historial y filtrar por "Comida". Verificar que solo salgan esas compras.
-2.  **Exportación:** Tocar el botón de exportar y elegir "Gmail". Verificar que el CSV se adjunte correctamente.
-3.  **Notificaciones:** Cargar una compra que supere el límite de "Ocio". Verificar que llegue el aviso al celular.
-4.  **Comparativa:** Entrar a la nueva pantalla y ver si "Leche" sale con el precio de Coto y Carrefour comparados.
+1.  **Modo Avión:** Abrir la app sin internet. La lista de supermercados debería aparecer igual (gracias al caché de Room).
+2.  **Entrada de Datos:** Escribir "1.500,50" en una compra. Verificar que se guarde el valor con decimales.
+3.  **Visual:** Comprobar que "Estadísticas" se lee perfectamente en la Home.

@@ -395,77 +395,17 @@ fun NuevaCompraScreen(
                 }
 
                 state.budgetStatus?.let { (safe, message) ->
-                    Card(
-                        modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (safe) BankerSafeBg else BankerUnsafeBg
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (safe) Icons.Filled.CheckCircle else Icons.Filled.AttachMoney,
-                                contentDescription = null,
-                                tint = if (safe) BankerSafe else BankerUnsafe
-                            )
-                            Spacer(Modifier.size(8.dp))
-                            Text(
-                                text = message,
-                                fontSize = 13.sp,
-                                color = if (safe) BankerSafeText else BankerUnsafeText,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
+                    com.undef.superahorro.Loza.Urieta.ui.screens.purchases.components.BankerStatusCard(safe, message)
                 }
             }
 
             Spacer(Modifier.height(16.dp))
 
             // CARD DE CÁMARA
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clickable { handleCameraClick() },
-                colors = CardDefaults.cardColors(
-                    containerColor = if (ticketUri != null) TicketCapturedBg else MaterialTheme.colorScheme.primaryContainer
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(28.dp))
-                            .background(if (ticketUri != null) TicketCapturedIcon else MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (ticketUri != null) Icons.Filled.CheckCircle else Icons.Filled.AddAPhoto,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = if (ticketUri != null) stringResource(R.string.new_purchase_ticket_captured) else stringResource(R.string.new_purchase_attach_ticket),
-                        fontWeight = FontWeight.Bold,
-                        color = if (ticketUri != null) TicketCapturedText else MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = if (ticketUri != null) stringResource(R.string.new_purchase_change_ticket) else stringResource(R.string.new_purchase_attach_hint),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                        fontSize = 12.sp
-                    )
-                }
-            }
+            com.undef.superahorro.Loza.Urieta.ui.screens.purchases.components.TicketCameraCard(
+                hasTicket = ticketUri != null,
+                onClick = { handleCameraClick() }
+            )
 
             Spacer(Modifier.height(24.dp))
 

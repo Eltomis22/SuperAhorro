@@ -49,6 +49,7 @@
     <string name="bottom_estadisticas">Estadísticas</string>
     <string name="bottom_perfil">Perfil</string>
     <string name="bottom_chat">IA Chat</string>
+    <string name="bottom_comparativa">Comparativa</string>
 
     <!-- Home -->
     <string name="home_hello">Hola, %1$s 👋</string>

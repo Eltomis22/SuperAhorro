@@ -42,6 +42,7 @@ class SuperAhorroApp : Application() {
             compraDao = database.compraDao(),
             productoDao = database.productoDao(),
             userDao = database.userDao(),
+            supermercadoDao = database.supermercadoDao(),
             api = api,
             settingsRepository = com.undef.superahorro.Loza.Urieta.data.SettingsRepository(this)
         )

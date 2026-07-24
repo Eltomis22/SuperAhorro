@@ -2,51 +2,18 @@ package com.undef.superahorro.Loza.Urieta.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,13 +26,8 @@ import com.undef.superahorro.Loza.Urieta.navigation.Screen
 import com.undef.superahorro.Loza.Urieta.ui.components.CompraResumenCard
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperAhorroBottomBar
 import com.undef.superahorro.Loza.Urieta.ui.components.SuperTopAppBar
-import com.undef.superahorro.Loza.Urieta.ui.theme.ActionHistoryBg
-import com.undef.superahorro.Loza.Urieta.ui.theme.ActionHistoryIcon
-import com.undef.superahorro.Loza.Urieta.ui.theme.ActionStatsBg
-import com.undef.superahorro.Loza.Urieta.ui.theme.ActionStatsIcon
-import com.undef.superahorro.Loza.Urieta.ui.theme.InfoFavoriteBg
-import com.undef.superahorro.Loza.Urieta.ui.theme.InfoSavingsBg
-import com.undef.superahorro.Loza.Urieta.ui.theme.WarningAmber
+import com.undef.superahorro.Loza.Urieta.ui.screens.home.components.*
+import com.undef.superahorro.Loza.Urieta.ui.theme.*
 import com.undef.superahorro.Loza.Urieta.ui.util.Formatters
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,7 +77,6 @@ fun HomeScreen(
                     contentPadding = PaddingValues(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 1. TARJETA PRINCIPAL (Gasto del mes)
                     item {
                         PremiumSpendingCard(
                             totalMes = state.totalMes,
@@ -123,7 +84,6 @@ fun HomeScreen(
                         )
                     }
 
-                    // 2. ACCIONES RÁPIDAS
                     item {
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             ModernActionCard(
@@ -150,7 +110,7 @@ fun HomeScreen(
                             ModernActionCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Filled.Storefront,
-                                label = "Comparativa",
+                                label = stringResource(R.string.bottom_comparativa), // Usamos nueva string
                                 color = MaterialTheme.colorScheme.tertiaryContainer,
                                 iconColor = MaterialTheme.colorScheme.tertiary,
                                 onClick = { navController.navigate(Screen.Comparativa.route) }
@@ -159,7 +119,6 @@ fun HomeScreen(
                         }
                     }
 
-                    // 3. WIDGETS DE INFORMACIÓN EXTRA (Para "llenar" el vacío)
                     item {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoMiniCard(
@@ -180,12 +139,8 @@ fun HomeScreen(
                         }
                     }
 
-                    // 4. TIP DEL DÍA
-                    item {
-                        TipCard()
-                    }
+                    item { TipCard() }
 
-                    // 5. SECCIÓN RECIENTES
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
@@ -209,9 +164,7 @@ fun HomeScreen(
                     }
 
                     if (state.ultimasCompras.isEmpty()) {
-                        item {
-                            EmptyRecentState()
-                        }
+                        item { EmptyRecentState() }
                     } else {
                         items(state.ultimasCompras, key = { it.id }) { compra ->
                             CompraResumenCard(
@@ -223,175 +176,9 @@ fun HomeScreen(
                         }
                     }
                     
-                    item { Spacer(Modifier.height(80.dp)) } // Margen para el FAB
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PremiumSpendingCard(totalMes: Double, message: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp)
-            .shadow(12.dp, RoundedCornerShape(28.dp))
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary
-                    )
-                )
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .size(150.dp)
-                .offset(x = 250.dp, y = (-40).dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.1f))
-        )
-
-        Column(
-            modifier = Modifier.fillMaxSize().padding(24.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.AutoMirrored.Filled.TrendingUp,
-                    null,
-                    tint = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.size(8.dp))
-                Text(
-                    text = stringResource(R.string.home_monthly_title).uppercase(),
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-
-            Column {
-                Text(
-                    text = Formatters.formatearMoneda(totalMes),
-                    color = Color.White,
-                    fontSize = 38.sp,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    text = message,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 13.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun InfoMiniCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    value: String,
-    icon: ImageVector,
-    color: Color,
-    onClick: (() -> Unit)? = null
-) {
-    Card(
-        modifier = if (onClick != null) modifier.clickable { onClick() } else modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = color)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Icon(icon, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(8.dp))
-            Text(title, fontSize = 12.sp, color = Color.Gray)
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1)
-        }
-    }
-}
-
-@Composable
-private fun TipCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Filled.Lightbulb, null, tint = WarningAmber)
-            Spacer(Modifier.size(12.dp))
-            Text(
-                text = stringResource(R.string.home_tip_text),
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-    }
-}
-
-@Composable
-private fun ModernActionCard(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    label: String,
-    color: Color,
-    iconColor: Color,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .height(110.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(color),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(imageVector = icon, contentDescription = null, tint = iconColor)
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = label,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                softWrap = false
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyRecentState() {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.home_no_purchases),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp
-        )
     }
 }
