@@ -71,6 +71,7 @@ class MiPerfilViewModel(
 
     fun cerrarSesion() {
         viewModelScope.launch {
+            repository.limpiarDatosLocales()
             settingsRepository.clearSession()
         }
     }

@@ -75,6 +75,12 @@ class SuperAhorroRepository(
         userDao.actualizarEmail(viejoEmail, nuevoEmail)
     }
 
+    suspend fun limpiarDatosLocales() = withContext(Dispatchers.IO) {
+        compraDao.eliminarTodasLasCompras()
+        userDao.eliminarTodosLosUsuarios()
+        // Nota: Los productos se borran por cascada al borrar las compras
+    }
+
     // --- COMPRAS (Lectura) ---
     
     suspend fun obtenerTodasLasComprasFlow(): Flow<List<Compra>> {

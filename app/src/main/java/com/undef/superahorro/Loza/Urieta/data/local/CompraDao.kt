@@ -35,4 +35,7 @@ interface CompraDao {
 
     @Query("DELETE FROM compras WHERE id = :id")
     suspend fun eliminarCompraPorId(id: Int)
+
+    @Query("DELETE FROM compras")
+    suspend fun eliminarTodasLasCompras()
 }

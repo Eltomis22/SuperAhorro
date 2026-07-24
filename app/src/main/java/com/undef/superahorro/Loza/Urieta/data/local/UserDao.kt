@@ -22,4 +22,7 @@ interface UserDao {
 
     @Query("UPDATE usuarios SET email = :nuevoEmail WHERE email = :viejoEmail")
     suspend fun actualizarEmail(viejoEmail: String, nuevoEmail: String)
+
+    @Query("DELETE FROM usuarios")
+    suspend fun eliminarTodosLosUsuarios()
 }

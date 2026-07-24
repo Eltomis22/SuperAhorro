@@ -97,7 +97,8 @@ fun NuevaCompraScreen(
                 }
                 
                 val file = File(directory, "ticket_${System.currentTimeMillis()}.jpg")
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                val authority = "com.undef.superahorro.fileprovider"
+                val uri = FileProvider.getUriForFile(context, authority, file)
                 ticketUriString = uri.toString()
                 cameraLauncher.launch(uri)
             } catch (e: Exception) {
